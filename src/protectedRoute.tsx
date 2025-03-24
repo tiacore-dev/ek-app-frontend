@@ -1,13 +1,14 @@
+//ProtectedRoute
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-// import { Navbar } from "./components/navbar/navbar";
+import { Navbar } from "./components/navbar/navbar";
 // import { Breadcrumbs } from "./components/breadcrumbs/breadcrumbs";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("access_token");
+    const accessToken = localStorage.getItem("token");
     if (!accessToken) {
       navigate("/login");
     }
@@ -15,7 +16,7 @@ const ProtectedRoute: React.FC = () => {
   //
   return (
     <>
-      {/* <Navbar /> */}
+      <Navbar />
       {/* <Breadcrumbs /> */}
       <Outlet />
     </>

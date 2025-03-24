@@ -1,0 +1,53 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 64px;
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo-image {
+  max-width: 150px;
+  width: 150px;
+  min-width: 150px;
+  height: auto;
+  display: block;
+}
+
+/* Десктоп: отображаем обычное меню */
+.navbar-menu-desktop {
+  display: block;
+}
+
+/* Мобильное меню скрыто по умолчанию */
+.navbar-menu-mobile {
+  display: none;
+}
+
+/* Адаптивность: при ширине экрана <=768px */
+@media (max-width: 768px) {
+  .navbar-menu-desktop {
+    display: none;
+  }
+
+  .navbar-menu-mobile {
+    display: block;
+  }
+
+  .logo-image {
+    max-width: 100px;
+    width: 100px;
+    min-width: 100px;
+  }
+}

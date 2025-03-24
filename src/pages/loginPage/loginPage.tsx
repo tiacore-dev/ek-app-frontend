@@ -2,19 +2,28 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "./axiosConfig";
-import { Button, Form, Input, Typography, Spin } from "antd";
-// import "./loginPage.css";
-import toast from "react-hot-toast";
+import {
+  Button,
+  Form,
+  Input,
+  Typography,
+  Spin,
+  Row,
+  Col,
+  notification,
+} from "antd";
 
-type FormData = {
+interface ILoginRequest {
   username: string;
   password: string;
-};
+}
 
-type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
-};
+interface ILoginRespone {
+  fullName: string;
+  username: string;
+  token: string;
+  permissions: string[];
+}
 
 type ApiError = {
   response?: {
@@ -27,7 +36,7 @@ type ApiError = {
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const loginMutation = useMutation<AuthResponse, Error, FormData>({
+  const loginMutation = useMutation<ILoginRespone, Error, ILoginRequest>({
     mutationFn: async (data) => {
       const url = process.env.REACT_APP_API_URL;
       if (!url) {
@@ -35,15 +44,10 @@ export const LoginPage: React.FC = () => {
       }
 
       try {
-        const response = await axiosInstance.post<AuthResponse>(
+        const response = await axiosInstance.post<ILoginRespone>(
           `${url}/auth/login`,
           data
         );
-        // const response = await axiosInstance.post<AuthResponse>(
-        //   "/http/hs/api/login", // Относительный URL
-        //   data
-        // );
-
         return response.data;
       } catch (error: unknown) {
         const apiError = error as ApiError;
@@ -57,67 +61,72 @@ export const LoginPage: React.FC = () => {
       }
     },
     onSuccess: (data) => {
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      localStorage.setItem("token", data.token);
       navigate("/home");
     },
     onError: (error) => {
-      toast.error(error.message);
+      notification.error({
+        message: "Ошибка",
+        description: error.message,
+        placement: "topRight",
+      });
     },
   });
 
-  const onFinish = (values: FormData) => {
+  const onFinish = (values: ILoginRequest) => {
     loginMutation.mutate(values);
   };
 
   return (
-    <div className="login_container">
-      <Form
-        layout="vertical"
-        onFinish={onFinish}
-        style={{ maxWidth: 400, margin: "0 auto" }}
-      >
-        <Typography.Title level={2} style={{ textAlign: "center" }}>
-          Вход
-        </Typography.Title>
-
-        <Form.Item
-          label="Логин"
-          name="username"
-          rules={[{ required: true, message: "Логин обязателен" }]}
+    <Row justify="center" align="middle" style={{ minHeight: "100vh" }}>
+      <Col xs={24} sm={20} md={16} lg={12} xl={8}>
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}
         >
-          <Input
-            placeholder="Введите логин"
-            disabled={loginMutation.isPending}
-          />
-        </Form.Item>
+          <Typography.Title level={2} style={{ textAlign: "center" }}>
+            Вход
+          </Typography.Title>
 
-        <Form.Item
-          label="Пароль"
-          name="password"
-          rules={[{ required: true, message: "Пароль обязателен" }]}
-        >
-          <Input.Password
-            placeholder="Введите пароль"
-            disabled={loginMutation.isPending}
-          />
-        </Form.Item>
-
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            disabled={loginMutation.isPending}
-            block
+          <Form.Item
+            label="Логин"
+            name="username"
+            rules={[{ required: true, message: "Логин обязателен" }]}
           >
-            {loginMutation.isPending ? (
-              <Spin size="small" className="center-spin" />
-            ) : (
-              "Войти"
-            )}
-          </Button>
-        </Form.Item>
-      </Form>
-    </div>
+            <Input
+              placeholder="Введите логин"
+              disabled={loginMutation.isPending}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Пароль"
+            name="password"
+            rules={[{ required: true, message: "Пароль обязателен" }]}
+          >
+            <Input.Password
+              placeholder="Введите пароль"
+              disabled={loginMutation.isPending}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={loginMutation.isPending}
+              block
+            >
+              {loginMutation.isPending ? (
+                <Spin size="small" className="center-spin" />
+              ) : (
+                "Войти"
+              )}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Col>
+    </Row>
   );
 };
