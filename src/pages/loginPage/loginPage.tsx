@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { axiosInstance } from "./axiosConfig";
+import { axiosInstance } from "../../axiosConfig";
 import {
   Button,
   Form,

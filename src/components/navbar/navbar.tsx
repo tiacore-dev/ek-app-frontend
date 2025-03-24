@@ -23,14 +23,6 @@ export const Navbar: React.FC = () => {
 
   return (
     <div className="navbar">
-      <div className="navbar-left" onClick={() => navigate("/home")}>
-        <img
-          src="https://static.tildacdn.com/tild3136-3639-4366-b261-316331313834/png_2.png"
-          alt="Логотип"
-          className="logo-image"
-        />
-      </div>
-
       {/* Меню для десктопа */}
       <div className="navbar-menu-desktop">
         <Menu
@@ -41,14 +33,23 @@ export const Navbar: React.FC = () => {
         />
       </div>
 
+      {/* Логотип справа */}
+      <div className="navbar-right" onClick={() => navigate("/home")}>
+        <img
+          src="https://static.tildacdn.com/tild3136-3639-4366-b261-316331313834/png_2.png"
+          alt="Логотип"
+          className="logo-image"
+        />
+      </div>
+
       {/* Меню для мобильных */}
       <div className="navbar-menu-mobile">
         <Button
           type="text"
           icon={<MenuOutlined />}
           onClick={() => setOpenDrawer(true)}
+          className="menu-button"
         />
-
         <Drawer
           title="Меню"
           placement="right"

@@ -1,0 +1,30 @@
+/* Общие стили для таблицы */
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Стили для кнопки фильтров */
+.mobile-filter-button {
+  display: none; /* По умолчанию скрыта */
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .desktop-filters {
+    display: none;
+  }
+
+  .mobile-filter-button {
+    display: block; /* Показываем только на мобильных */
+  }
+
+  .ant-table {
+    font-size: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px !important;
+  }
+}
