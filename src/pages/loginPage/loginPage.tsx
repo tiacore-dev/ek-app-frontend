@@ -43,6 +43,7 @@ export const LoginPage: React.FC = () => {
         //   "/http/hs/api/login", // Относительный URL
         //   data
         // );
+
         return response.data;
       } catch (error: unknown) {
         const apiError = error as ApiError;
