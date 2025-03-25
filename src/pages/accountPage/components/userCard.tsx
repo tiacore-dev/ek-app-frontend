@@ -14,7 +14,11 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
     <Card
       title={
         <Space>
-          <Avatar size="large" icon={<UserOutlined />} />
+          <Avatar
+            size="large"
+            icon={<UserOutlined style={{ color: "#ef7e1a" }} />}
+            style={{ backgroundColor: "#f8f8f8" }} // Фон можно тоже изменить
+          />
           <Typography.Title level={4} style={{ margin: 0 }}>
             Мой аккаунт
           </Typography.Title>

@@ -22,8 +22,8 @@ export interface IPaginateResponse<R> {
 }
 
 export interface IShiftsQueryParams {
-  limit?: number;
-  offset?: number;
+  limit: number;
+  offset: number;
   date_from?: number;
   date_to?: number;
 }

@@ -1,5 +1,5 @@
 // src/pages/shiftsPage/shiftsPage.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Typography,
@@ -12,6 +12,7 @@ import {
   Spin,
   Card,
   Statistic,
+  List,
 } from "antd";
 import dayjs from "dayjs";
 import { IShiftsQueryParams, DateRangeType } from "./types/shifts";
@@ -23,6 +24,18 @@ export const ShiftsPage: React.FC = () => {
     limit: 10,
     offset: 0,
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const { data, isLoading, isError, error } = useShiftsQuery(queryParams);
   const columns = getShiftsColumns();
@@ -51,6 +64,85 @@ export const ShiftsPage: React.FC = () => {
     });
   };
 
+  const handleResetDateFilters = () => {
+    setQueryParams({
+      ...queryParams,
+      date_from: undefined,
+      date_to: undefined,
+    });
+  };
+
+  const renderMobileList = () => (
+    <List
+      dataSource={data?.data}
+      loading={isLoading}
+      renderItem={(item) => (
+        <Card
+          title={`Рейс: ${item.auto}`}
+          style={{ marginBottom: 16 }}
+          size="small"
+        >
+          <Typography.Text strong>Дата: </Typography.Text>
+          <Typography.Text>
+            {dayjs(item.date).format("DD.MM.YYYY")}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>Начало: </Typography.Text>
+          <Typography.Text>
+            {dayjs(item.date_start).format("DD.MM.YYYY HH:mm")}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>Окончание: </Typography.Text>
+          <Typography.Text>
+            {dayjs(item.date_finish).format("DD.MM.YYYY HH:mm")}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>Города: </Typography.Text>
+          <Typography.Text>
+            {item.city_start} → {item.city_finish}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>Водитель: </Typography.Text>
+          <Typography.Text>{item.name}</Typography.Text>
+          <br />
+          <Typography.Text strong>Комментарий: </Typography.Text>
+          <Typography.Text>{item.comment || "—"}</Typography.Text>
+        </Card>
+      )}
+      pagination={{
+        current: queryParams.offset
+          ? queryParams.offset / queryParams.limit! + 1
+          : 1,
+        pageSize: queryParams.limit,
+        total: data?.total,
+        onChange: handlePaginationChange,
+        showSizeChanger: true,
+        pageSizeOptions: ["10", "20", "50", "100"],
+      }}
+    />
+  );
+
+  const renderDesktopTable = () => (
+    <Table
+      columns={columns}
+      dataSource={data?.data}
+      rowKey="id"
+      pagination={{
+        current: queryParams.offset
+          ? queryParams.offset / queryParams.limit! + 1
+          : 1,
+        pageSize: queryParams.limit,
+        total: data?.total,
+        onChange: handlePaginationChange,
+        showSizeChanger: true,
+        pageSizeOptions: ["10", "20", "50", "100"],
+      }}
+      scroll={{ x: "max-content" }}
+      bordered
+      size="middle"
+    />
+  );
+
   return (
     <div style={{ padding: "20px" }}>
       {!isError && (
@@ -63,27 +155,24 @@ export const ShiftsPage: React.FC = () => {
                   onChange={handleDateChange}
                   disabled={isLoading}
                   style={{ width: 250 }}
-                />
-              </Space>
-
-              <Space direction="vertical">
-                <Typography.Text strong>На странице</Typography.Text>
-                <InputNumber
-                  min={1}
-                  max={100}
-                  value={queryParams.limit}
-                  onChange={(value) =>
-                    setQueryParams({ ...queryParams, limit: value || 10 })
+                  value={
+                    queryParams.date_from && queryParams.date_to
+                      ? [
+                          dayjs(queryParams.date_from),
+                          dayjs(queryParams.date_to),
+                        ]
+                      : undefined
                   }
-                  disabled={isLoading}
                 />
               </Space>
 
               <Button
-                onClick={() => setQueryParams({ limit: 10, offset: 0 })}
-                disabled={isLoading}
+                onClick={handleResetDateFilters}
+                disabled={
+                  isLoading || (!queryParams.date_from && !queryParams.date_to)
+                }
               >
-                Сбросить фильтры
+                Сбросить даты
               </Button>
             </Space>
           </Card>
@@ -106,24 +195,7 @@ export const ShiftsPage: React.FC = () => {
           )}
 
           <Spin spinning={isLoading}>
-            <Table
-              columns={columns}
-              dataSource={data?.data}
-              rowKey="id"
-              pagination={{
-                current: queryParams.offset
-                  ? queryParams.offset / queryParams.limit! + 1
-                  : 1,
-                pageSize: queryParams.limit,
-                total: data?.total,
-                onChange: handlePaginationChange,
-                showSizeChanger: true,
-                pageSizeOptions: ["10", "20", "50", "100"],
-              }}
-              scroll={{ x: "max-content" }}
-              bordered
-              size="middle"
-            />
+            {isMobile ? renderMobileList() : renderDesktopTable()}
           </Spin>
         </div>
       )}
