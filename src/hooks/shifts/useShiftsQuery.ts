@@ -1,12 +1,12 @@
 // src/hooks/useShiftsQuery.ts
 import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "../axiosConfig";
+import { axiosInstance } from "../../axiosConfig";
 import { useNavigate } from "react-router-dom";
 import {
   IPaginateResponse,
   IListShiftResponse,
   IShiftsQueryParams,
-} from "../pages/shiftsPage/types/shifts";
+} from "../../pages/shiftsPage/types/shifts";
 
 export const useShiftsQuery = (queryParams: IShiftsQueryParams) => {
   const navigate = useNavigate();

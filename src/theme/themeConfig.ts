@@ -11,9 +11,11 @@ const theme: ThemeConfig = {
   },
   components: {
     Button: {
-      colorPrimary: "#ef7e1a",
-      colorPrimaryHover: "#1a3490",
-      colorPrimaryActive: "#12276d",
+      colorPrimary: "#2444b5", // Основной цвет кнопок
+      colorPrimaryHover: "#1a3490", // Цвет при наведении (можно сделать темнее на 10-15%)
+      colorPrimaryActive: "#12276d", // Цвет при нажатии (еще темнее)
+      colorLink: "#2444b5", // Цвет ссылочных кнопок
+      colorLinkHover: "#1a3490", // Ссылка при наведении
     },
     Menu: {
       itemSelectedColor: "#2444b5",

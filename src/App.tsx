@@ -13,6 +13,7 @@ import { HomePage } from "./pages/homePage/homePage";
 import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
 import theme from "./theme/themeConfig"; // Импорт темы
+import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage";
 
 import "antd/dist/reset.css"; // Импорт стилей Ant Design
 
@@ -28,6 +29,7 @@ const App: React.FC = () => {
             <Route path="/home" element={<HomePage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/shifts" element={<ShiftsPage />} />
+            <Route path="/shifts/:shift_id" element={<ShiftDetailPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>

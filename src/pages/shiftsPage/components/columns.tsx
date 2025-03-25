@@ -1,7 +1,7 @@
-// src/components/ShiftsTable/columns.ts
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import { IListShiftResponse } from "../types/shifts";
+import { Link } from "react-router-dom";
 
 export const getShiftsColumns = (): TableColumnsType<IListShiftResponse> => [
   {
@@ -9,6 +9,9 @@ export const getShiftsColumns = (): TableColumnsType<IListShiftResponse> => [
     dataIndex: "auto",
     key: "auto",
     width: 120,
+    render: (text: string, record: IListShiftResponse) => (
+      <Link to={`/shifts/${record.id}`}>{text}</Link>
+    ),
   },
   {
     title: "Дата",
@@ -24,33 +27,7 @@ export const getShiftsColumns = (): TableColumnsType<IListShiftResponse> => [
     width: 100,
   },
   {
-    title: "Начало рейса",
-    dataIndex: "date_start",
-    key: "date_start",
-    render: (date: number) => dayjs(date).format("DD.MM.YYYY HH:mm"),
-    width: 150,
-  },
-  {
-    title: "Окончание рейса",
-    dataIndex: "date_finish",
-    key: "date_finish",
-    render: (date: number) => dayjs(date).format("DD.MM.YYYY HH:mm"),
-    width: 150,
-  },
-  {
-    title: "Город отправления",
-    dataIndex: "city_start",
-    key: "city_start",
-    width: 150,
-  },
-  {
-    title: "Город назначения",
-    dataIndex: "city_finish",
-    key: "city_finish",
-    width: 150,
-  },
-  {
-    title: "Водитель",
+    title: "Маршрут",
     dataIndex: "name",
     key: "name",
     width: 150,
