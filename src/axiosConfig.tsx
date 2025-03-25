@@ -1,38 +1,52 @@
 import axios from "axios";
 
-export const axiosInstance = axios.create({
-  withCredentials: false,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+export const axiosInstance = axios.create({});
 
 // Логируем заголовки и параметры запроса перед отправкой
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log("Запрос отправляется:", {
+    console.log("[Axios Request]", {
       url: config.url,
       method: config.method,
       headers: config.headers,
       params: config.params,
-      data: config.data, // для POST/PUT-запросов
+      data: config.data,
     });
     return config;
   },
   (error) => {
-    console.error("Ошибка в interceptor.request:", error);
+    console.error("[Axios Request Error]", error);
     return Promise.reject(error);
   }
 );
 
-// Обработка ответов (у вас уже есть)
+// Обработка ошибок (особенно 401 - Unauthorized)
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
+  (response) => {
+    // Можно добавить логирование успешных ответов (опционально)
+    console.log("[Axios Response]", {
+      status: response.status,
+      data: response.data,
+      headers: response.headers,
+    });
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Логирование ошибки
+    console.error("[Axios Response Error]", {
+      status: error.response?.status,
+      message: error.message,
+      config: error.config,
+    });
+
+    // Обработка 401 ошибки
+    if (error.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
+
     return Promise.reject(error);
   }
 );

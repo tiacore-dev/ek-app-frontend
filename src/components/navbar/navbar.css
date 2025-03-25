@@ -3,57 +3,58 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  position: relative; /* Для правильного позиционирования */
+  padding: 10px 20px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
 }
 
-/* Меню для десктопа */
 .navbar-menu-desktop {
-  flex: 1; /* Меню будет слева */
-}
-
-/* Логотип */
-.navbar-right {
-  margin-left: auto; /* Логотип будет справа */
-  margin-right: 0;
+  flex: 1;
 }
 
 .logo-image {
   max-width: 150px;
   height: auto;
-  cursor: pointer;
+  transition: opacity 0.3s;
 }
 
-/* Для мобильных устройств */
+.logo-image:hover {
+  opacity: 0.8;
+}
+
 .navbar-menu-mobile {
-  display: none; /* Скрываем меню для десктопа */
+  display: none;
 }
 
-/* Логотип для мобильных */
-.navbar-right {
-  margin-left: auto; /* Логотип будет справа */
-}
-
+/* Мобильная версия */
 @media (max-width: 768px) {
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+  }
+
   .navbar-menu-desktop {
-    display: none; /* Скрываем меню для десктопа */
+    display: none;
   }
 
-  /* Бургер-меню слева */
   .navbar-menu-mobile {
-    display: flex;
-    position: absolute;
-    left: 20px;
-    top: 100%;
-    transform: translateY(10%);
+    display: block;
+    z-index: 1001;
   }
 
-  /* Логотип для мобильных */
-  .navbar-right {
-    margin-left: auto; /* Логотип будет справа */
-    position: absolute;
-    right: 0px;
-    top: 100%;
-    transform: translateY(10%);
+  .logo-image {
+    max-width: 120px;
+  }
+
+  /* Отступ для контента */
+  body {
+    padding-top: 60px;
   }
 }

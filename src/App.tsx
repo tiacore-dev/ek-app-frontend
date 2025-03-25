@@ -12,6 +12,7 @@ import { LoginPage } from "./pages/loginPage/loginPage";
 import { HomePage } from "./pages/homePage/homePage";
 import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
+import theme from "./theme/themeConfig"; // Импорт темы
 
 import "antd/dist/reset.css"; // Импорт стилей Ant Design
 

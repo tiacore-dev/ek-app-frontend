@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px !important;
+  }
+}

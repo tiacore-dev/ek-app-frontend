@@ -18,7 +18,7 @@ interface ILoginRequest {
   password: string;
 }
 
-interface ILoginRespone {
+export interface ILoginRespone {
   fullName: string;
   username: string;
   token: string;
@@ -62,6 +62,7 @@ export const LoginPage: React.FC = () => {
     },
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userData", JSON.stringify(data));
       navigate("/home");
     },
     onError: (error) => {
