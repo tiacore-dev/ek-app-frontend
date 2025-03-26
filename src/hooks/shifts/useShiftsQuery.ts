@@ -21,7 +21,7 @@ export const useShiftsQuery = (queryParams: IShiftsQueryParams) => {
       }
 
       const response = await axiosInstance.get(
-        `${process.env.REACT_APP_API_URL}shifts/get`,
+        `${process.env.REACT_APP_API_URL}/shifts/get`,
         {
           headers: {
             token: token,
