@@ -3,6 +3,7 @@ import { List, Card, Typography } from "antd";
 import dayjs from "dayjs";
 import { IListShiftResponse } from "../types/shifts";
 import { Link } from "react-router-dom";
+import "../../../components/cards/card.css";
 
 interface MobileShiftsListProps {
   data: IListShiftResponse[];
@@ -20,27 +21,27 @@ export const MobileShiftsList: React.FC<MobileShiftsListProps> = ({
       dataSource={data}
       loading={isLoading}
       renderItem={(item) => (
-        <Card
-          title={
-            <Link to={`/shifts/${item.id}`} style={{ color: "inherit" }}>
-              Автомобиль: {item.auto}
-            </Link>
-          }
-          style={{ marginBottom: 16 }}
-          size="small"
-        >
-          <Typography.Text strong>Дата: </Typography.Text>
-          <Typography.Text>
-            {dayjs(item.date).format("DD.MM.YYYY")}
-          </Typography.Text>
-          <br />
-          <br />
-          <Typography.Text strong>Маршрут: </Typography.Text>
-          <Typography.Text>{item.name}</Typography.Text>
-          <br />
-          <Typography.Text strong>Комментарий: </Typography.Text>
-          <Typography.Text>{item.comment || "—"}</Typography.Text>
-        </Card>
+        <Link to={`/shifts/${item.id}`} style={{ display: "block" }}>
+          <Card
+            className="clickable-card"
+            size="small"
+            title={
+              <Typography.Text>
+                {dayjs(item.date).format("DD.MM.YYYY")}
+              </Typography.Text>
+            }
+            // style={{ marginBottom: 16 }}
+          >
+            <Typography.Text strong>Автомобиль: </Typography.Text>
+            <Typography.Text>{item.auto}</Typography.Text>
+            <br />
+            <Typography.Text strong>Маршрут: </Typography.Text>
+            <Typography.Text>{item.name}</Typography.Text>
+            <br />
+            <Typography.Text strong>Комментарий: </Typography.Text>
+            <Typography.Text>{item.comment || "—"}</Typography.Text>
+          </Card>
+        </Link>
       )}
       pagination={{
         ...pagination,

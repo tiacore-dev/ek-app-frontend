@@ -1,28 +1,45 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button, List, Divider } from "antd";
 import dayjs from "dayjs";
 import { fetchShiftById } from "../../api/shiftApi";
-
+import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
+import { useDispatch } from "react-redux";
 export const ShiftDetailPage: React.FC = () => {
   const { shift_id } = useParams<{ shift_id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["shift", shift_id],
     queryFn: () => fetchShiftById(shift_id!),
   });
 
+  useEffect(() => {
+    if (data) {
+      dispatch(
+        setBreadcrumbs([
+          { label: "...", to: "/home" },
+          { label: "Рейсы", to: "/shifts" },
+          {
+            label: `Рейс ${dayjs(data.date).format("DD.MM.YYYY")}`,
+            to: `/shifts/${shift_id}`,
+          },
+        ])
+      );
+    }
+  }, [data, dispatch, shift_id]);
+
   return (
     <div style={{ padding: "20px" }}>
-      <Button
+      {/* <Button
         onClick={() => navigate(-1)}
         style={{ marginBottom: 20 }}
-        type="primary"
+        // type="primary"
       >
         Назад к списку
-      </Button>
+      </Button> */}
       {isLoading && <Spin size="large" />}
 
       {!isError && !isLoading && (

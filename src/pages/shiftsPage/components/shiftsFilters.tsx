@@ -18,9 +18,8 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
   dateFrom,
   dateTo,
 }) => (
-  <Space size="large" wrap>
+  <Space size="small" wrap>
     <Space direction="vertical">
-      <Typography.Text strong>Период</Typography.Text>
       <DatePicker.RangePicker
         onChange={onDateChange}
         disabled={isLoading}
@@ -28,6 +27,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
         value={
           dateFrom && dateTo ? [dayjs(dateFrom), dayjs(dateTo)] : undefined
         }
+        format="DD.MM.YYYY"
       />
     </Space>
 
@@ -35,7 +35,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
       onClick={onResetDates}
       disabled={isLoading || (!dateFrom && !dateTo)}
     >
-      Сбросить даты
+      Сбросить
     </Button>
   </Space>
 );

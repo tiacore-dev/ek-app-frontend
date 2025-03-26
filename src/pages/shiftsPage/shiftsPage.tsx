@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Card, Spin, Row, Col, Button } from "antd";
 import dayjs from "dayjs";
 import { IShiftsQueryParams } from "./types/shifts";
@@ -8,8 +8,21 @@ import { DesktopShiftsTable } from "./components/desktopShiftsTable";
 import { ShiftsFilters } from "./components/shiftsFilters";
 import { ShiftsStats } from "./components/shiftsStats";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
+import { useDispatch } from "react-redux";
 
 export const ShiftsPage: React.FC = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(
+      setBreadcrumbs([
+        { label: "Главная страница", to: "/home" },
+        { label: "Рейсы", to: "/shifts" },
+      ])
+    );
+  }, [dispatch]);
+
   const [queryParams, setQueryParams] = React.useState<IShiftsQueryParams>({
     limit: 10,
     offset: 0,

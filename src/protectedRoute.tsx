@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Navbar } from "./components/navbar/navbar";
-// import { Breadcrumbs } from "./components/breadcrumbs/breadcrumbs";
+import { Breadcrumbs } from "./components/breadcrumbs/breadcrumbs";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC = () => {
   return (
     <>
       <Navbar />
-      {/* <Breadcrumbs /> */}
+      <Breadcrumbs />
       <Outlet />
     </>
   );
