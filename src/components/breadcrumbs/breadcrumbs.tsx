@@ -10,7 +10,7 @@ export const Breadcrumbs: React.FC = () => {
   );
 
   return (
-    <Breadcrumb style={{ margin: "1%" }}>
+    <Breadcrumb style={{ margin: "1%", marginBottom: "0" }}>
       {breadcrumbs.map((path, index) => (
         <Breadcrumb.Item key={index}>
           {index === breadcrumbs.length - 1 ? (

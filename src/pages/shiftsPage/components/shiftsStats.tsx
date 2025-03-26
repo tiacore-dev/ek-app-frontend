@@ -8,8 +8,8 @@ interface ShiftsStatsProps {
 
 export const ShiftsStats: React.FC<ShiftsStatsProps> = ({ data }) => (
   <Row>
-    <Typography.Paragraph>
+    {/* <Typography.Paragraph>
       <strong>Всего рейсов:</strong> {data?.total || 0}
-    </Typography.Paragraph>
+    </Typography.Paragraph> */}
   </Row>
 );

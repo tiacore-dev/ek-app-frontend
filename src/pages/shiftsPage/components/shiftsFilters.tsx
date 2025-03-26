@@ -9,6 +9,7 @@ interface ShiftsFiltersProps {
   isLoading: boolean;
   dateFrom?: number;
   dateTo?: number;
+  totalShifts?: number;
 }
 
 export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
@@ -17,6 +18,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
   isLoading,
   dateFrom,
   dateTo,
+  totalShifts,
 }) => (
   <Space size="small" wrap>
     <Space direction="vertical">
@@ -37,5 +39,16 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
     >
       Сбросить
     </Button>
+
+    {totalShifts !== undefined && (
+      <div style={{ display: "flex", alignItems: "center", marginLeft: 16 }}>
+        <Typography.Text style={{ marginRight: 8 }}>
+          Всего рейсов:
+        </Typography.Text>
+        <Typography.Text strong style={{ color: "#002091" }}>
+          {totalShifts}
+        </Typography.Text>
+      </div>
+    )}
   </Space>
 );

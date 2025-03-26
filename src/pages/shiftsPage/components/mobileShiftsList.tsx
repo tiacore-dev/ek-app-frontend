@@ -33,10 +33,10 @@ export const MobileShiftsList: React.FC<MobileShiftsListProps> = ({
             // style={{ marginBottom: 16 }}
           >
             <Typography.Text strong>Автомобиль: </Typography.Text>
-            <Typography.Text>{item.auto}</Typography.Text>
+            <Typography.Text>{item.auto || "—"}</Typography.Text>
             <br />
             <Typography.Text strong>Маршрут: </Typography.Text>
-            <Typography.Text>{item.name}</Typography.Text>
+            <Typography.Text>{item.name || "—"}</Typography.Text>
             <br />
             <Typography.Text strong>Комментарий: </Typography.Text>
             <Typography.Text>{item.comment || "—"}</Typography.Text>

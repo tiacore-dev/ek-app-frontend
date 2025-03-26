@@ -75,20 +75,19 @@ export const ShiftsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "10px 20px 20px 20px" }}>
       {!isError && (
         <div>
-          <Card style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 12 }}>
             <ShiftsFilters
               onDateChange={handleDateChange}
               onResetDates={handleResetDateFilters}
               isLoading={isLoading}
               dateFrom={queryParams.date_from}
               dateTo={queryParams.date_to}
+              totalShifts={data?.total}
             />
-          </Card>
-
-          <ShiftsStats data={data} />
+          </div>
 
           <Spin spinning={isLoading}>
             {isMobile ? (
@@ -108,7 +107,7 @@ export const ShiftsPage: React.FC = () => {
         </div>
       )}
       {isError && (
-        <Row justify="center" style={{ marginTop: 20 }}>
+        <Row justify="center" style={{ marginTop: "20%" }}>
           <Col span={24}>
             <Typography.Text type="danger">{error.message}</Typography.Text>
           </Col>

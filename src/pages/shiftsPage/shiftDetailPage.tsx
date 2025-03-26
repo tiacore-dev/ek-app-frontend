@@ -1,15 +1,20 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Spin, Card, Typography, Button, List, Divider } from "antd";
+import { Spin, Card, Typography, Button, Divider, List } from "antd";
 import dayjs from "dayjs";
 import { fetchShiftById } from "../../api/shiftApi";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { DesktopManifestsTable } from "./components/manifests/desktopManifestsTable";
+import { MobileManifestsList } from "./components/manifests/mobileManifestsList";
+
 export const ShiftDetailPage: React.FC = () => {
   const { shift_id } = useParams<{ shift_id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isMobile = useMobileDetection();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["shift", shift_id],
@@ -20,7 +25,7 @@ export const ShiftDetailPage: React.FC = () => {
     if (data) {
       dispatch(
         setBreadcrumbs([
-          { label: "...", to: "/home" },
+          { label: "Главная страница", to: "/home" },
           { label: "Рейсы", to: "/shifts" },
           {
             label: `Рейс ${dayjs(data.date).format("DD.MM.YYYY")}`,
@@ -31,30 +36,32 @@ export const ShiftDetailPage: React.FC = () => {
     }
   }, [data, dispatch, shift_id]);
 
+  const manifestsPagination = {
+    pageSize: 5,
+    showSizeChanger: false,
+    hideOnSinglePage: true,
+  };
+
   return (
     <div style={{ padding: "20px" }}>
-      {/* <Button
-        onClick={() => navigate(-1)}
-        style={{ marginBottom: 20 }}
-        // type="primary"
-      >
-        Назад к списку
-      </Button> */}
       {isLoading && <Spin size="large" />}
 
       {!isError && !isLoading && (
-        <Card title={`Детали рейса: ${data?.auto}`}>
+        <Card title={`Детали рейса:`}>
           <Typography.Paragraph>
             <strong>Дата:</strong> {dayjs(data?.date).format("DD.MM.YYYY")}
           </Typography.Paragraph>
           <Typography.Paragraph>
-            <strong>Маршрут:</strong> {data?.name}
+            <strong>Авто:</strong> {data?.auto || "—"}
           </Typography.Paragraph>
           <Typography.Paragraph>
-            <strong>Карта:</strong> {data?.card}
+            <strong>Маршрут:</strong> {data?.name || "—"}
           </Typography.Paragraph>
           <Typography.Paragraph>
-            <strong>Основная оплата:</strong> {data?.payment} руб.
+            <strong>Карта:</strong> {data?.card || "—"}
+          </Typography.Paragraph>
+          <Typography.Paragraph>
+            <strong>Основная оплата:</strong> {data?.payment || "—"} руб.
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Комментарий:</strong> {data?.comment || "—"}
@@ -73,25 +80,30 @@ export const ShiftDetailPage: React.FC = () => {
           />
 
           <Divider orientation="left">Манифесты</Divider>
-          <List
-            dataSource={data?.manifests}
-            renderItem={(manifest) => (
-              <List.Item>
-                <Typography.Text strong>№ {manifest.number}</Typography.Text>
-                <div>Отправитель: {manifest.sender}</div>
-                <div>Получатель: {manifest.recipient}</div>
-                <div>Дата: {dayjs(manifest.date).format("DD.MM.YYYY")}</div>
-                <div>Мест: {manifest.pieces_count}</div>
-                <div>Посылок: {manifest.parcels_count}</div>
-                <div>Вес: {manifest.weight} кг</div>
-                <div>Объем: {manifest.volume} м³</div>
-              </List.Item>
+          <div style={{ margin: "0 -24px" }}>
+            {isMobile ? (
+              <MobileManifestsList
+                data={data?.manifests || []}
+                isLoading={false}
+              />
+            ) : (
+              <DesktopManifestsTable data={data?.manifests || []} rowKey="id" />
             )}
-            locale={{ emptyText: "Нет манифестов" }}
-          />
+          </div>
         </Card>
       )}
-      {isError && <div>Ошибка загрузки данных</div>}
+      {isError && (
+        <Card>
+          <Typography.Text type="danger">
+            Ошибка загрузки данных
+          </Typography.Text>
+          <div style={{ marginTop: 16 }}>
+            <Button type="primary" onClick={() => navigate(-1)}>
+              Назад
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
