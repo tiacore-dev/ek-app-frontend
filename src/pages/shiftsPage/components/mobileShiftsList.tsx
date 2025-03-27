@@ -1,7 +1,7 @@
 import React from "react";
 import { List, Card, Typography } from "antd";
 import dayjs from "dayjs";
-import { IListShiftResponse } from "../types/shifts";
+import { IListShiftResponse } from "../../../types/shifts";
 import { Link } from "react-router-dom";
 import "../../../components/cards/card.css";
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Typography, Card, Spin, Row, Col, Button } from "antd";
 import dayjs from "dayjs";
-import { IShiftsQueryParams } from "./types/shifts";
+import { IShiftsQueryParams } from "../../types/shifts";
 import { useShiftsQuery } from "../../hooks/shifts/useShiftsQuery";
 import { MobileShiftsList } from "./components/mobileShiftsList";
 import { DesktopShiftsTable } from "./components/desktopShiftsTable";

@@ -1,6 +1,6 @@
 // src/components/manifests/manifestsColumns.tsx
 import type { TableColumnsType } from "antd";
-import { IListManifest } from "../../types/manifests";
+import { IListManifest } from "../../../../types/shifts";
 import { Link } from "react-router-dom";
 
 export const getManifestsColumns = (

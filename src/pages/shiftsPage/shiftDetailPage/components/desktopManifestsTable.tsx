@@ -1,7 +1,7 @@
 // src/components/manifests/desktopManifestsTable.tsx
 import React from "react";
 import { Table } from "antd";
-import { IListManifest } from "../../types/manifests";
+import { IListManifest } from "../../../../types/shifts";
 import { getManifestsColumns } from "./manifestsColumns";
 
 interface DesktopManifestsTableProps {

@@ -1,17 +1,16 @@
-// src/hooks/useShiftsQuery.ts
+// src/hooks/useShiftQuery.ts
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { fetchShifts } from "../../api/shiftsApi";
-import { IShiftsQueryParams } from "../../types/shifts";
+import { fetchShiftById } from "../../api/shiftsApi";
 
-export const useShiftsQuery = (queryParams: IShiftsQueryParams) => {
+export const useShiftQuery = (shiftId: string) => {
   const navigate = useNavigate();
 
   return useQuery({
-    queryKey: ["shifts", queryParams],
+    queryKey: ["shift", shiftId],
     queryFn: async () => {
       try {
-        return await fetchShifts(queryParams);
+        return await fetchShiftById(shiftId);
       } catch (error) {
         if (
           error instanceof Error &&

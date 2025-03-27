@@ -1,6 +1,6 @@
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
-import { IListShiftResponse } from "../types/shifts";
+import { IListShiftResponse } from "../../../types/shifts";
 import { Link } from "react-router-dom";
 
 export const getShiftsColumns = (): TableColumnsType<IListShiftResponse> => [

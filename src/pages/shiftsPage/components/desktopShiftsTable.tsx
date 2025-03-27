@@ -1,6 +1,6 @@
 import React from "react";
 import { Table } from "antd";
-import { IListShiftResponse } from "../types/shifts";
+import { IListShiftResponse } from "../../../types/shifts";
 import { getShiftsColumns } from "./columns";
 
 interface DesktopShiftsTableProps {

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button } from "antd";
 import dayjs from "dayjs";
-import { fetchShiftById } from "../../../api/shiftApi";
+import { fetchShiftById } from "../../../api/shiftsApi";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
 

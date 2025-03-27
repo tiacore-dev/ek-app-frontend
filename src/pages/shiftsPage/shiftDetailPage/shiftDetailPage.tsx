@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button, Divider, List } from "antd";
 import dayjs from "dayjs";
-import { fetchShiftById } from "../../../api/shiftApi";
+import { useShiftQuery } from "../../../hooks/shifts/useShiftQuery";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
@@ -16,10 +16,7 @@ export const ShiftDetailPage: React.FC = () => {
   const dispatch = useDispatch();
   const isMobile = useMobileDetection();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["shift", shift_id],
-    queryFn: () => fetchShiftById(shift_id!),
-  });
+  const { data, isLoading, isError } = useShiftQuery(shift_id!);
 
   useEffect(() => {
     if (data) {
@@ -29,17 +26,10 @@ export const ShiftDetailPage: React.FC = () => {
           { label: "Рейсы", to: "/shifts" },
           {
             label: `Рейс ${dayjs(data.date_start).format("DD.MM.YYYY")}`,
-            // dayjs(dateString).format("DD.MM.YYYY");
-            // label: `Рейс ${data.date}`,
-
             to: `/shifts/${shift_id}`,
           },
         ])
       );
-      // const date = dayjs(data.date, "YYYY-MM-DDTHH:mm:ss");
-      // console.log("(!!!!!!!!!!!!)");
-      // console.log(data.date);
-      // console.log(date.format("DD.MM.YYYY")); // "07.10.2024
     }
   }, [data, dispatch, shift_id]);
 

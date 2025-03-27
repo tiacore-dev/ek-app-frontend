@@ -1,7 +1,7 @@
 import React from "react";
 import { Space, DatePicker, Button, Typography } from "antd";
 import dayjs from "dayjs";
-import { DateRangeType } from "../types/shifts";
+import { DateRangeType } from "../../../types/shifts";
 
 interface ShiftsFiltersProps {
   onDateChange: (dates: DateRangeType, dateStrings: [string, string]) => void;
