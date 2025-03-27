@@ -4,6 +4,7 @@ import {
   IShiftResponse,
   IListShiftResponse,
   IPaginateResponse,
+  IListManifest,
 } from "../types/shifts";
 
 const getAuthHeaders = () => {
@@ -26,24 +27,20 @@ export const fetchShiftById = async (
   return response.data;
 };
 
-// export const fetchShifts = async (
-//   limit: number,
-//   offset: number,
-//   dateFrom?: number,
-//   dateTo?: number
-// ): Promise<IPaginateResponse<IListShiftResponse>> => {
-//   const url = process.env.REACT_APP_API_URL;
+export const fetchManifestById = async (
+  manifestId: string
+): Promise<IListManifest> => {
+  const url = process.env.REACT_APP_API_URL;
 
-//   const params: Record<string, any> = { limit, offset };
-//   if (dateFrom) params.date_from = dateFrom;
-//   if (dateTo) params.date_to = dateTo;
-
-//   const response = await axiosInstance.get(`${url}/shifts/get`, {
-//     headers: getAuthHeaders(),
-//     params,
-//   });
-//   return response.data;
-// };
+  const response = await axiosInstance.get(
+    `${url}/manifest/${manifestId}/get`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+  console.log("[Server Response Data]", response.data);
+  return response.data;
+};
 
 export const fetchShifts = async (params: {
   limit: number;
@@ -56,19 +53,6 @@ export const fetchShifts = async (params: {
   const response = await axiosInstance.get(`${url}/shifts/get`, {
     headers: getAuthHeaders(),
     params,
-  });
-  return response.data;
-};
-
-// Экспортируем функцию для использования в хуке
-export const fetchShiftsWithParams = async (
-  queryParams: Record<string, any>
-): Promise<IPaginateResponse<IListShiftResponse>> => {
-  const url = process.env.REACT_APP_API_URL;
-
-  const response = await axiosInstance.get(`${url}/shifts/get`, {
-    headers: getAuthHeaders(),
-    params: queryParams,
   });
   return response.data;
 };

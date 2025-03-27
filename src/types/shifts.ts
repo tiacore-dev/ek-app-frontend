@@ -16,6 +16,13 @@ export interface IListManifest {
   volume: number;
 }
 
+export interface ManifestsComponentProps {
+  data: IListManifest[];
+  shiftId: string;
+  isLoading?: boolean;
+  rowKey?: string;
+}
+
 export interface IShiftBase {
   id: string;
   auto: string;

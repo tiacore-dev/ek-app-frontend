@@ -45,12 +45,6 @@ export const ShiftDetailPage: React.FC = () => {
     }
   }, [data, dispatch, shift_id]);
 
-  const manifestsPagination = {
-    pageSize: 5,
-    showSizeChanger: false,
-    hideOnSinglePage: true,
-  };
-
   return (
     <div style={{ padding: "20px" }}>
       {isLoading && <Spin size="large" />}

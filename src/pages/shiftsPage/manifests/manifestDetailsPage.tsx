@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button } from "antd";
 import dayjs from "dayjs";
-import { fetchShiftById } from "../../../api/shiftsApi";
+import { fetchManifestById } from "../../../api/shiftsApi";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
 
@@ -16,44 +16,82 @@ export const ManifestDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const {
-    data: shiftData,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["shift", shift_id],
-    queryFn: () => fetchShiftById(shift_id!),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["manifest", manifest_id],
+    queryFn: () => fetchManifestById(manifest_id!),
   });
 
   useEffect(() => {
-    if (shiftData) {
+    if (data) {
       dispatch(
         setBreadcrumbs([
-          { label: "Главная страница", to: "/home" },
+          { label: "...", to: "/home" },
           { label: "Рейсы", to: "/shifts" },
           {
-            label: `Рейс ${dayjs(shiftData.date_start).format("DD.MM.YYYY")}`,
+            label: `Рейс`,
             to: `/shifts/${shift_id}`,
           },
           {
-            label: `Манифест ${manifest_id}`,
-            to: `/shifts/${shift_id}/${manifest_id}`,
+            label: `Манифест ${data.number}`,
+            to: `/shifts/${shift_id}/${data.id}`,
           },
         ])
       );
     }
-  }, [shiftData, dispatch, shift_id, manifest_id]);
+  }, [data, dispatch, shift_id]);
 
   return (
     <div style={{ padding: "20px" }}>
       {isLoading && <Spin size="large" />}
 
       {!isError && !isLoading && (
-        <Card title={`Детали манифеста ${manifest_id}`}>
-          <Typography.Paragraph>
+        <Card title={`Детали манифеста ${data?.number}`}>
+          {/* <Typography.Paragraph>
             <strong>Принадлежит рейсу:</strong>{" "}
-            {dayjs(shiftData?.date_start).format("DD.MM.YYYY")}
           </Typography.Paragraph>
+          id: string;
+  sender: string;
+  recipient: string;
+  date: number;
+  number: string;
+  parcels_count: number;
+  pieces_count: number;
+  weight: number;
+  volume: number; */}
+          <Typography.Text strong>
+            Отправитель:{" "}
+            {/* </Typography.Text>
+                            <Typography.Text> */}
+            {data?.sender || "—"}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>
+            Мест:
+            {/* </Typography.Text>
+                            <Typography.Text> */}
+            {data?.pieces_count || "—"}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>
+            Посылок:
+            {/* </Typography.Text>
+                            <Typography.Text> */}
+            {data?.parcels_count || "—"}
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>
+            Вес:
+            {/* </Typography.Text>
+                            <Typography.Text> */}
+            {data?.weight || "—"} кг
+          </Typography.Text>
+          <br />
+          <Typography.Text strong>
+            Объем:
+            {/* </Typography.Text>
+                            <Typography.Text> */}
+            {data?.volume || "—"} м³
+          </Typography.Text>
         </Card>
       )}
 
