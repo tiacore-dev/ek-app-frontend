@@ -100,11 +100,25 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "flex-end", // Добавьте это свойство
+                      position: "relative", // Добавляем для псевдоэлемента
+                      paddingBottom: 4, // Отступ для полосы
+                      marginRight: 4, // Добавьте отступ справа для лучшего вида
                     }}
                   >
                     <Typography.Text strong style={{ fontSize: "14px" }}>
                       Отправления
                     </Typography.Text>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: "50%",
+                        right: 0,
+                        height: 1,
+                        backgroundColor: "#ef7e1a",
+                      }}
+                    />
                   </div>
                   <List
                     dataSource={group.asSender}
@@ -129,11 +143,25 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "flex-end", // Добавьте это свойство
+                      position: "relative", // Добавляем для псевдоэлемента
+                      paddingBottom: 4, // Отступ для полосы
+                      marginRight: 4, // Добавьте отступ справа для лучшего вида
                     }}
                   >
                     <Typography.Text strong style={{ fontSize: "14px" }}>
                       Поступления
                     </Typography.Text>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: "50%",
+                        right: 0,
+                        height: 1,
+                        backgroundColor: "#ef7e1a",
+                      }}
+                    />
                   </div>
                   <List
                     dataSource={group.asRecipient}
