@@ -30,7 +30,8 @@ export const MobileManifestsList: React.FC<MobileManifestsListProps> = ({
             style={{ marginBottom: "6px" }}
             title={
               <Typography.Text>
-                Манифест №{item.number} от {item.date}
+                Манифест №{item.number}
+                {/* от {item.date} */}
               </Typography.Text>
             }
           >

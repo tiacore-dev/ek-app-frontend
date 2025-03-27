@@ -1,0 +1,11 @@
+:root {
+  --navbar-height: 60px;
+}
+
+.main-content {
+  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+  /* overflow-x: hidden; */
+  overflow-y: auto;
+  box-sizing: border-box;
+}

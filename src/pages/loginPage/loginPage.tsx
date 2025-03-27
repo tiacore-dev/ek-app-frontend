@@ -84,7 +84,7 @@ export const LoginPage: React.FC = () => {
         <Form
           layout="vertical"
           onFinish={onFinish}
-          style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}
+          style={{ padding: "40px", background: "#fff", borderRadius: "8px" }}
         >
           <Typography.Title level={2} style={{ textAlign: "center" }}>
             Вход

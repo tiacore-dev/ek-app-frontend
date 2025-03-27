@@ -10,7 +10,7 @@ export const HomePage: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <Row justify="center" align="middle" style={{ minHeight: "100vh" }}>
+    <Row justify="center" align="middle">
       <Col xs={24} sm={20} md={16} lg={12} xl={8}>
         <Typography.Title level={1} style={{ textAlign: "center" }}>
           Вы успешно авторизовались!

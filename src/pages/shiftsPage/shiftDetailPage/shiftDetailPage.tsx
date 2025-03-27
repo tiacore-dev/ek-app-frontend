@@ -10,6 +10,18 @@ import { useMobileDetection } from "../../../hooks/useMobileDetection";
 import { DesktopManifestsTable } from "./components/desktopManifestsTable";
 import { MobileManifestsList } from "./components/mobileManifestsList";
 
+// Функция для проверки корректности даты
+const isValidDate = (timestamp?: number): boolean => {
+  if (!timestamp) return false;
+  const date = new Date(timestamp);
+  return !isNaN(date.getTime()) && date.getTime() > 0;
+};
+
+// Функция для форматирования даты с проверкой
+const formatDateSafe = (timestamp?: number): string => {
+  return isValidDate(timestamp) ? dayjs(timestamp).format("DD.MM.YYYY") : "—";
+};
+
 export const ShiftDetailPage: React.FC = () => {
   const { shift_id } = useParams<{ shift_id: string }>();
   const navigate = useNavigate();
@@ -25,7 +37,7 @@ export const ShiftDetailPage: React.FC = () => {
           { label: "Главная страница", to: "/home" },
           { label: "Рейсы", to: "/shifts" },
           {
-            label: `Рейс ${dayjs(data.date).format("DD.MM.YYYY")}`,
+            label: `Рейс`,
             to: `/shifts/${shift_id}`,
           },
         ])
@@ -46,9 +58,10 @@ export const ShiftDetailPage: React.FC = () => {
       {!isError && !isLoading && (
         <Card title={`Детали рейса:`}>
           <Typography.Paragraph>
-            <strong>Даты:</strong>{" "}
-            {dayjs(data?.date_start).format("DD.MM.YYYY")}-
-            {dayjs(data?.date_finish).format("DD.MM.YYYY")}
+            <strong>Даты:</strong> {formatDateSafe(data?.date_start)}
+            {data?.date_finish && isValidDate(data.date_finish)
+              ? ` - ${formatDateSafe(data.date_finish)}`
+              : ""}
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Авто:</strong> {data?.auto || "—"}
