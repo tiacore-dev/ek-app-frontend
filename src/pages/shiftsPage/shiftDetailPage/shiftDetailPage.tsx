@@ -50,7 +50,11 @@ export const ShiftDetailPage: React.FC = () => {
       {isLoading && <Spin size="large" />}
 
       {!isError && !isLoading && (
-        <Card title={`Детали рейса:`}>
+        <div>
+          <Divider orientation="left" style={{ marginTop: "-8px" }}>
+            Детали
+          </Divider>
+
           <Typography.Paragraph>
             <strong>Даты:</strong> {formatDateSafe(data?.date_start)}
             {data?.date_finish && isValidDate(data.date_finish)
@@ -74,16 +78,21 @@ export const ShiftDetailPage: React.FC = () => {
           </Typography.Paragraph>
 
           <Divider orientation="left">Дополнительные платежи</Divider>
-          <List
-            dataSource={data?.extra_payments}
-            renderItem={(payment) => (
-              <List.Item>
-                <Typography.Text strong>{payment.description}</Typography.Text>{" "}
-                {payment.summ} руб.
-              </List.Item>
-            )}
-            locale={{ emptyText: "Нет дополнительных платежей" }}
-          />
+          {data?.extra_payments?.length ? (
+            <List
+              dataSource={data.extra_payments}
+              renderItem={(payment) => (
+                <List.Item>
+                  <Typography.Text strong>
+                    {payment.description}
+                  </Typography.Text>{" "}
+                  {payment.summ} руб.
+                </List.Item>
+              )}
+            />
+          ) : (
+            <Typography.Paragraph>—</Typography.Paragraph>
+          )}
 
           <Divider orientation="left">Манифесты</Divider>
           <div style={{ margin: "0 -24px" }}>
@@ -101,7 +110,7 @@ export const ShiftDetailPage: React.FC = () => {
               />
             )}
           </div>
-        </Card>
+        </div>
       )}
       {isError && (
         <Card>

@@ -46,50 +46,27 @@ export const ManifestDetailPage: React.FC = () => {
 
       {!isError && !isLoading && (
         <Card title={`Детали манифеста ${data?.number}`}>
-          {/* <Typography.Paragraph>
-            <strong>Принадлежит рейсу:</strong>{" "}
-          </Typography.Paragraph>
-          id: string;
-  sender: string;
-  recipient: string;
-  date: number;
-  number: string;
-  parcels_count: number;
-  pieces_count: number;
-  weight: number;
-  volume: number; */}
           <Typography.Text strong>
-            Отправитель:{" "}
-            {/* </Typography.Text>
-                            <Typography.Text> */}
-            {data?.sender || "—"}
+            Отправитель: {data?.sender || "—"}
           </Typography.Text>
           <br />
           <Typography.Text strong>
             Мест:
-            {/* </Typography.Text>
-                            <Typography.Text> */}
             {data?.pieces_count || "—"}
           </Typography.Text>
           <br />
           <Typography.Text strong>
             Накладных:
-            {/* </Typography.Text>
-                            <Typography.Text> */}
             {data?.parcels_count || "—"}
           </Typography.Text>
           <br />
           <Typography.Text strong>
             Вес:
-            {/* </Typography.Text>
-                            <Typography.Text> */}
             {data?.weight || "—"} кг
           </Typography.Text>
           <br />
           <Typography.Text strong>
             Объем:
-            {/* </Typography.Text>
-                            <Typography.Text> */}
             {data?.volume || "—"} м³
           </Typography.Text>
         </Card>

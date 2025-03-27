@@ -49,6 +49,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = ({
               isMobile ? "vertical-date-picker mobile" : "vertical-date-picker"
             }
             allowClear={false}
+            inputReadOnly={isMobile} // Добавьте эту строку
           />
         </Space>
 
