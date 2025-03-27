@@ -40,7 +40,7 @@ export const getManifestsColumns = (
     width: 30,
   },
   {
-    title: "Посылок",
+    title: "Накладных",
     dataIndex: "parcels_count",
     key: "parcels_count",
     width: 30,

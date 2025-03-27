@@ -40,7 +40,7 @@ export const ManifestCard: React.FC<ManifestCardProps> = ({
       <Typography.Text>{manifest.pieces_count || "—"}</Typography.Text>
       <Typography.Text strong style={{ color: "#2444b5" }}>
         {" "}
-        Посылок:{" "}
+        Накладных:{" "}
       </Typography.Text>
       <Typography.Text>{manifest.parcels_count || "—"}</Typography.Text>
     </Card>

@@ -73,7 +73,7 @@ export const ManifestDetailPage: React.FC = () => {
           </Typography.Text>
           <br />
           <Typography.Text strong>
-            Посылок:
+            Накладных:
             {/* </Typography.Text>
                             <Typography.Text> */}
             {data?.parcels_count || "—"}

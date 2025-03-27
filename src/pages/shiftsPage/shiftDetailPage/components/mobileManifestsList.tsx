@@ -102,40 +102,25 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       alignItems: "center",
                     }}
                   >
-                    <CaretRightOutlined
-                      style={{
-                        marginRight: 6,
-                        transform:
-                          groupState.activeGroups[group.city] === "sender"
-                            ? "rotate(90deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
-                        color: "#ef7e1a",
-                      }}
-                    />
                     <Typography.Text strong style={{ fontSize: "14px" }}>
-                      Отправления из {group.city} ({group.asSender.length})
+                      Отправления
                     </Typography.Text>
                   </div>
-
-                  {groupState.activeGroups[group.city] === "sender" && (
-                    <List
-                      dataSource={group.asSender}
-                      style={{ margin: 0, padding: 0 }}
-                      renderItem={(item) => (
-                        <div style={{ padding: "2px 0" }}>
-                          <ManifestCard
-                            manifest={item}
-                            shiftId={shiftId}
-                            type="sender"
-                          />
-                        </div>
-                      )}
-                    />
-                  )}
+                  <List
+                    dataSource={group.asSender}
+                    style={{ margin: 0, padding: 0 }}
+                    renderItem={(item) => (
+                      <div style={{ padding: "2px 0" }}>
+                        <ManifestCard
+                          manifest={item}
+                          shiftId={shiftId}
+                          type="sender"
+                        />
+                      </div>
+                    )}
+                  />
                 </div>
               )}
-
               {group.asRecipient.length > 0 && (
                 <div>
                   <div
@@ -146,37 +131,23 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       alignItems: "center",
                     }}
                   >
-                    <CaretRightOutlined
-                      style={{
-                        marginRight: 6,
-                        transform:
-                          groupState.activeGroups[group.city] === "recipient"
-                            ? "rotate(90deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
-                        color: "#ef7e1a",
-                      }}
-                    />
                     <Typography.Text strong style={{ fontSize: "14px" }}>
-                      Поступления в {group.city} ({group.asRecipient.length})
+                      Поступления
                     </Typography.Text>
                   </div>
-
-                  {groupState.activeGroups[group.city] === "recipient" && (
-                    <List
-                      dataSource={group.asRecipient}
-                      style={{ margin: 0, padding: 0 }}
-                      renderItem={(item) => (
-                        <div>
-                          <ManifestCard
-                            manifest={item}
-                            shiftId={shiftId}
-                            type="recipient"
-                          />
-                        </div>
-                      )}
-                    />
-                  )}
+                  <List
+                    dataSource={group.asRecipient}
+                    style={{ margin: 0, padding: 0 }}
+                    renderItem={(item) => (
+                      <div>
+                        <ManifestCard
+                          manifest={item}
+                          shiftId={shiftId}
+                          type="recipient"
+                        />
+                      </div>
+                    )}
+                  />
                 </div>
               )}
             </div>
