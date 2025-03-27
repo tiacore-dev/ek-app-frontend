@@ -8,10 +8,18 @@ import { DesktopShiftsTable } from "./components/desktopShiftsTable";
 import { ShiftsFilters } from "./components/shiftsFilters";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import {
+  setShiftsDateFilter,
+  resetShiftsDateFilter,
+} from "../../redux/slices/dataFiltersSlice";
 
 export const ShiftsPage: React.FC = () => {
   const dispatch = useDispatch();
+  const { dateFrom, dateTo } = useSelector(
+    (state: RootState) => state.datafilters.shifts
+  );
 
   useEffect(() => {
     dispatch(
@@ -25,6 +33,8 @@ export const ShiftsPage: React.FC = () => {
   const [queryParams, setQueryParams] = React.useState<IShiftsQueryParams>({
     limit: 10,
     offset: 0,
+    date_from: dateFrom,
+    date_to: dateTo,
   });
 
   const isMobile = useMobileDetection();
@@ -35,14 +45,19 @@ export const ShiftsPage: React.FC = () => {
     dateStrings: [string, string]
   ) => {
     if (dates && dates[0] && dates[1]) {
+      const newDates = {
+        dateFrom: dates[0].valueOf(),
+        dateTo: dates[1].valueOf(),
+      };
       setQueryParams({
         ...queryParams,
-        date_from: dates[0].valueOf(),
-        date_to: dates[1].valueOf(),
+        ...newDates,
       });
+      dispatch(setShiftsDateFilter(newDates));
     } else {
       const { date_from, date_to, ...rest } = queryParams;
       setQueryParams(rest);
+      dispatch(resetShiftsDateFilter());
     }
   };
 
@@ -55,11 +70,9 @@ export const ShiftsPage: React.FC = () => {
   };
 
   const handleResetDateFilters = () => {
-    setQueryParams({
-      ...queryParams,
-      date_from: undefined,
-      date_to: undefined,
-    });
+    const { date_from, date_to, ...rest } = queryParams;
+    setQueryParams(rest);
+    dispatch(resetShiftsDateFilter());
   };
 
   const paginationConfig = {
