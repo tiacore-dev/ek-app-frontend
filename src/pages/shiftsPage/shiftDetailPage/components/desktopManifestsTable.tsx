@@ -7,14 +7,16 @@ import { getManifestsColumns } from "./manifestsColumns";
 interface DesktopManifestsTableProps {
   data: IListManifest[];
   rowKey: string;
+  shiftId: string;
 }
 
 export const DesktopManifestsTable: React.FC<DesktopManifestsTableProps> = ({
   data,
   rowKey,
+  shiftId,
 }) => (
   <Table
-    columns={getManifestsColumns()}
+    columns={getManifestsColumns(shiftId)}
     dataSource={data}
     rowKey={rowKey}
     pagination={false}

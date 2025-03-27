@@ -3,13 +3,15 @@ import type { TableColumnsType } from "antd";
 import { IListManifest } from "../../types/manifests";
 import { Link } from "react-router-dom";
 
-export const getManifestsColumns = (): TableColumnsType<IListManifest> => [
+export const getManifestsColumns = (
+  shift_id: string
+): TableColumnsType<IListManifest> => [
   {
     title: "Номер",
     dataIndex: "number",
     key: "number",
     render: (number: string, record: IListManifest) => (
-      <Link to={`/manifests/${record.id}`}>{number}</Link>
+      <Link to={`/shifts/${shift_id}/${record.id}`}>{number}</Link>
     ),
     width: 80,
   },

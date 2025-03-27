@@ -1,6 +1,7 @@
 // src/components/manifests/mobileManifestsList.tsx
 import React from "react";
 import { List, Card, Typography } from "antd";
+import dayjs from "dayjs";
 import { IListManifest } from "../../types/manifests";
 import { Link } from "react-router-dom";
 import "../../../../components/cards/card.css";
@@ -8,11 +9,13 @@ import "../../../../components/cards/card.css";
 interface MobileManifestsListProps {
   data: IListManifest[];
   isLoading: boolean;
+  shiftId: string;
 }
 
 export const MobileManifestsList: React.FC<MobileManifestsListProps> = ({
   data,
   isLoading,
+  shiftId,
 }) => {
   return (
     <List
@@ -20,7 +23,7 @@ export const MobileManifestsList: React.FC<MobileManifestsListProps> = ({
       loading={isLoading}
       style={{ margin: 0 }}
       renderItem={(item) => (
-        <Link to={`/manifests/${item.id}`} style={{ display: "block" }}>
+        <Link to={`/shifts/${shiftId}/${item.id}`} style={{ display: "block" }}>
           <Card
             className="clickable-card"
             size="small"

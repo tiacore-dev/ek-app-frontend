@@ -12,7 +12,8 @@ import { LoginPage } from "./pages/loginPage/loginPage";
 import { HomePage } from "./pages/homePage/homePage";
 import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
-import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage";
+import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage/shiftDetailPage";
+import { ManifestDetailPage } from "./pages/shiftsPage/manifests/manifestDetailsPage";
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -37,6 +38,10 @@ const App: React.FC = () => {
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/shifts" element={<ShiftsPage />} />
                 <Route path="/shifts/:shift_id" element={<ShiftDetailPage />} />
+                <Route
+                  path="/shifts/:shift_id/:manifest_id"
+                  element={<ManifestDetailPage />}
+                />
               </Route>
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>

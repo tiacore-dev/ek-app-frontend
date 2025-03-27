@@ -8,7 +8,7 @@ export const getShiftsColumns = (): TableColumnsType<IListShiftResponse> => [
     title: "Дата",
     dataIndex: "date",
     key: "date",
-    render: (date: number, record: IListShiftResponse) => (
+    render: (date: string, record: IListShiftResponse) => (
       <Link to={`/shifts/${record.id}`}>
         {dayjs(date).format("DD.MM.YYYY")}
       </Link>

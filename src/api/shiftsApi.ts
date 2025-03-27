@@ -27,7 +27,6 @@ export const fetchShifts = async (
   dateTo?: number
 ): Promise<IPaginateResponse<IListShiftResponse>> => {
   const token = localStorage.getItem("token");
-  const url = process.env.REACT_APP_API_URL;
 
   if (!token) {
     throw new Error("Токен не найден в localStorage");
@@ -38,7 +37,7 @@ export const fetchShifts = async (
   if (dateFrom) params.date_from = dateFrom;
   if (dateTo) params.date_to = dateTo;
 
-  const response = await axiosInstance.get(`${url}/shifts/get`, {
+  const response = await axiosInstance.get("/shifts/get", {
     headers: {
       token: token,
       // "Content-Type": "application/json",

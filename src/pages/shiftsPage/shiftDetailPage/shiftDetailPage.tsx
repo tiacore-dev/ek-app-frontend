@@ -3,12 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button, Divider, List } from "antd";
 import dayjs from "dayjs";
-import { fetchShiftById } from "../../api/shiftApi";
-import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
+import { fetchShiftById } from "../../../api/shiftApi";
+import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
-import { useMobileDetection } from "../../hooks/useMobileDetection";
-import { DesktopManifestsTable } from "./components/manifests/desktopManifestsTable";
-import { MobileManifestsList } from "./components/manifests/mobileManifestsList";
+import { useMobileDetection } from "../../../hooks/useMobileDetection";
+import { DesktopManifestsTable } from "./components/desktopManifestsTable";
+import { MobileManifestsList } from "./components/mobileManifestsList";
 
 export const ShiftDetailPage: React.FC = () => {
   const { shift_id } = useParams<{ shift_id: string }>();
@@ -28,11 +28,18 @@ export const ShiftDetailPage: React.FC = () => {
           { label: "Главная страница", to: "/home" },
           { label: "Рейсы", to: "/shifts" },
           {
-            label: `Рейс ${dayjs(data.date).format("DD.MM.YYYY")}`,
+            label: `Рейс ${dayjs(data.date_start).format("DD.MM.YYYY")}`,
+            // dayjs(dateString).format("DD.MM.YYYY");
+            // label: `Рейс ${data.date}`,
+
             to: `/shifts/${shift_id}`,
           },
         ])
       );
+      // const date = dayjs(data.date, "YYYY-MM-DDTHH:mm:ss");
+      // console.log("(!!!!!!!!!!!!)");
+      // console.log(data.date);
+      // console.log(date.format("DD.MM.YYYY")); // "07.10.2024
     }
   }, [data, dispatch, shift_id]);
 
@@ -49,7 +56,9 @@ export const ShiftDetailPage: React.FC = () => {
       {!isError && !isLoading && (
         <Card title={`Детали рейса:`}>
           <Typography.Paragraph>
-            <strong>Дата:</strong> {dayjs(data?.date).format("DD.MM.YYYY")}
+            <strong>Даты:</strong>{" "}
+            {dayjs(data?.date_start).format("DD.MM.YYYY")}-
+            {dayjs(data?.date_finish).format("DD.MM.YYYY")}
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Авто:</strong> {data?.auto || "—"}
@@ -72,7 +81,7 @@ export const ShiftDetailPage: React.FC = () => {
             dataSource={data?.extra_payments}
             renderItem={(payment) => (
               <List.Item>
-                <Typography.Text strong>{payment.description}:</Typography.Text>{" "}
+                <Typography.Text strong>{payment.description}</Typography.Text>{" "}
                 {payment.summ} руб.
               </List.Item>
             )}
@@ -85,9 +94,14 @@ export const ShiftDetailPage: React.FC = () => {
               <MobileManifestsList
                 data={data?.manifests || []}
                 isLoading={false}
+                shiftId={shift_id!}
               />
             ) : (
-              <DesktopManifestsTable data={data?.manifests || []} rowKey="id" />
+              <DesktopManifestsTable
+                data={data?.manifests || []}
+                rowKey="id"
+                shiftId={shift_id!}
+              />
             )}
           </div>
         </Card>

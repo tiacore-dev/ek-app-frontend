@@ -6,7 +6,6 @@ import { useShiftsQuery } from "../../hooks/shifts/useShiftsQuery";
 import { MobileShiftsList } from "./components/mobileShiftsList";
 import { DesktopShiftsTable } from "./components/desktopShiftsTable";
 import { ShiftsFilters } from "./components/shiftsFilters";
-import { ShiftsStats } from "./components/shiftsStats";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";

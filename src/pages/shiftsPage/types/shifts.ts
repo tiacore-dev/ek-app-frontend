@@ -1,9 +1,8 @@
-// src/types/shifts.ts
 import { Dayjs } from "dayjs";
 
-export interface IListShiftResponse {
+export interface IShiftBase {
+  id: string;
   auto: string;
-  date: number;
   card: string;
   date_start: number;
   date_finish: number;
@@ -11,14 +10,17 @@ export interface IListShiftResponse {
   city_finish: string;
   name: string;
   comment: string;
-  id: string;
 }
 
-export interface IPaginateResponse<R> {
+export interface IListShiftResponse extends IShiftBase {
+  date: number; // Только для списка
+}
+
+export interface IPaginateResponse<T> {
   limit: number;
   offset: number;
   total: number;
-  data: R[];
+  data: T[];
 }
 
 export interface IShiftsQueryParams {
