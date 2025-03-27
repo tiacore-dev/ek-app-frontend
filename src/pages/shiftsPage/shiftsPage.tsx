@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Typography, Card, Spin, Row, Col, Button } from "antd";
+import { Typography, Card, Spin, Row, Col } from "antd";
 import dayjs from "dayjs";
 import { IShiftsQueryParams } from "../../types/shifts";
 import { useShiftsQuery } from "../../hooks/shifts/useShiftsQuery";
@@ -9,18 +9,16 @@ import { ShiftsFilters } from "./components/shiftsFilters";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
-
 import {
   setShiftsDateFilter,
   resetShiftsDateFilter,
+  setShiftsPagination,
 } from "../../redux/slices/dataFiltersSlice";
+import { RootState } from "../../redux/store";
 
 export const ShiftsPage: React.FC = () => {
   const dispatch = useDispatch();
-  const { dateFrom, dateTo } = useSelector(
-    (state: RootState) => state.datafilters.shifts
-  );
+  const isMobile = useMobileDetection();
 
   useEffect(() => {
     dispatch(
@@ -31,59 +29,58 @@ export const ShiftsPage: React.FC = () => {
     );
   }, [dispatch]);
 
-  // Инициализируем параметры запроса с учетом сохраненных фильтров
+  const { dateFrom, dateTo, currentPage, pageSize } = useSelector(
+    (state: RootState) => state.datafilters.shifts
+  );
+
   const [queryParams, setQueryParams] = React.useState<IShiftsQueryParams>({
-    limit: 10,
-    offset: 0,
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize,
     date_from: dateFrom,
     date_to: dateTo,
   });
 
-  const isMobile = useMobileDetection();
-  const { data, isLoading, isError, error } = useShiftsQuery(queryParams);
-
-  // Обновляем параметры запроса при изменении фильтров в Redux
   useEffect(() => {
-    setQueryParams((prev) => ({
-      ...prev,
+    setQueryParams({
+      limit: pageSize,
+      offset: (currentPage - 1) * pageSize,
       date_from: dateFrom,
       date_to: dateTo,
-      offset: 0, // Сбрасываем пагинацию при изменении фильтров
-    }));
-  }, [dateFrom, dateTo]);
+    });
+  }, [dateFrom, dateTo, currentPage, pageSize]);
+
+  const { data, isLoading, isError, error } = useShiftsQuery(queryParams);
 
   const handleDateChange = (
     dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
     dateStrings: [string, string]
   ) => {
     if (dates && dates[0] && dates[1]) {
-      const newDates = {
-        dateFrom: dates[0].valueOf(),
-        dateTo: dates[1].valueOf(),
-      };
-      dispatch(setShiftsDateFilter(newDates));
+      dispatch(
+        setShiftsDateFilter({
+          dateFrom: dates[0].valueOf(),
+          dateTo: dates[1].valueOf(),
+        })
+      );
+      dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
     } else {
       dispatch(resetShiftsDateFilter());
+      dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
     }
-  };
-
-  const handlePaginationChange = (page: number, pageSize: number) => {
-    setQueryParams((prev) => ({
-      ...prev,
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
-    }));
   };
 
   const handleResetDateFilters = () => {
     dispatch(resetShiftsDateFilter());
+    dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
+  };
+
+  const handlePaginationChange = (page: number, newPageSize: number) => {
+    dispatch(setShiftsPagination({ currentPage: page, pageSize: newPageSize }));
   };
 
   const paginationConfig = {
-    current: queryParams.offset
-      ? queryParams.offset / queryParams.limit + 1
-      : 1,
-    pageSize: queryParams.limit,
+    current: currentPage,
+    pageSize: pageSize,
     total: data?.total,
     onChange: handlePaginationChange,
     showSizeChanger: true,
@@ -99,8 +96,8 @@ export const ShiftsPage: React.FC = () => {
               onDateChange={handleDateChange}
               onResetDates={handleResetDateFilters}
               isLoading={isLoading}
-              dateFrom={queryParams.date_from}
-              dateTo={queryParams.date_to}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
               totalShifts={data?.total}
             />
           </div>

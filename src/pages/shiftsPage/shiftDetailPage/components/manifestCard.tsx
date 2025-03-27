@@ -14,13 +14,24 @@ export const ManifestCard: React.FC<ManifestCardProps> = ({
   shiftId,
   type,
 }) => (
-  <Link to={`/shifts/${shiftId}/${manifest.id}`} style={{ display: "block" }}>
-    <Card className="clickable-card" size="small">
+  <Link
+    to={`/shifts/${shiftId}/${manifest.id}`}
+    style={{
+      display: "block",
+      borderRadius: "6px",
+      // Усиленная обводка
+    }}
+  >
+    <Card
+      className="clickable-card"
+      size="small"
+      bodyStyle={{ padding: "8px" }}
+    >
       <Typography.Text strong style={{ color: "#2444b5" }}>
-        {type === "sender" ? "Отправитель: " : "Получатель: "}
+        {type === "sender" ? "Получатель: " : "Отправитель: "}
       </Typography.Text>
       <Typography.Text>
-        {type === "sender" ? manifest.sender || "—" : manifest.recipient || "—"}
+        {type === "sender" ? manifest.recipient || "—" : manifest.sender || "—"}
       </Typography.Text>
       <br />
       <Typography.Text strong style={{ color: "#2444b5" }}>

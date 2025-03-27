@@ -1,30 +1,47 @@
 import { ManifestsComponentProps } from "../../../../types/shifts";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { List, Card, Typography } from "antd";
 import { CaretRightOutlined } from "@ant-design/icons";
 import { ManifestCard } from "./manifestCard";
 import { groupManifestsByCity } from "./manifestGrouping";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../../redux/store";
+import {
+  setActiveCity,
+  setActiveGroup,
+} from "../../../../redux/slices/shiftGroupsSlice";
 
 export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
   data,
   isLoading,
   shiftId,
 }) => {
-  const [activeCity, setActiveCity] = useState<string | null>(null);
-  const [activeGroup, setActiveGroup] = useState<{
-    [key: string]: string | null;
-  }>({});
+  const dispatch = useDispatch();
+  const groupState = useSelector(
+    (state: RootState) =>
+      state.shiftGroups[shiftId] || {
+        activeCity: null,
+        activeGroups: {},
+      }
+  );
+
   const groupedManifests = groupManifestsByCity(data || []);
 
   const toggleCity = (city: string) => {
-    setActiveCity(activeCity === city ? null : city);
+    const newActiveCity = groupState.activeCity === city ? null : city;
+    dispatch(setActiveCity({ shiftId, city: newActiveCity }));
   };
 
   const toggleGroup = (city: string, groupType: string) => {
-    setActiveGroup((prev) => ({
-      ...prev,
-      [city]: prev[city] === groupType ? null : groupType,
-    }));
+    const newActiveGroup =
+      groupState.activeGroups[city] === groupType ? null : groupType;
+    dispatch(
+      setActiveGroup({
+        shiftId,
+        city,
+        groupType: newActiveGroup,
+      })
+    );
   };
 
   return (
@@ -39,7 +56,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
           }}
           bodyStyle={{
-            padding: activeCity === group.city ? "8px 10px" : "0",
+            padding: groupState.activeCity === group.city ? "8px 10px" : "0",
           }}
           headStyle={{
             minHeight: 36,
@@ -52,13 +69,15 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
+                whiteSpace: "normal", // Добавляем перенос текста
+                wordBreak: "break-word", // Переносим длинные слова
               }}
             >
               <CaretRightOutlined
                 style={{
                   marginRight: 8,
                   transform:
-                    activeCity === group.city
+                    groupState.activeCity === group.city
                       ? "rotate(90deg)"
                       : "rotate(0deg)",
                   transition: "transform 0.2s",
@@ -71,7 +90,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             </div>
           }
         >
-          {activeCity === group.city && (
+          {groupState.activeCity === group.city && (
             <div style={{ marginLeft: 6 }}>
               {group.asSender.length > 0 && (
                 <div>
@@ -87,7 +106,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       style={{
                         marginRight: 6,
                         transform:
-                          activeGroup[group.city] === "sender"
+                          groupState.activeGroups[group.city] === "sender"
                             ? "rotate(90deg)"
                             : "rotate(0deg)",
                         transition: "transform 0.2s",
@@ -99,7 +118,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                     </Typography.Text>
                   </div>
 
-                  {activeGroup[group.city] === "sender" && (
+                  {groupState.activeGroups[group.city] === "sender" && (
                     <List
                       dataSource={group.asSender}
                       style={{ margin: 0, padding: 0 }}
@@ -131,7 +150,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       style={{
                         marginRight: 6,
                         transform:
-                          activeGroup[group.city] === "recipient"
+                          groupState.activeGroups[group.city] === "recipient"
                             ? "rotate(90deg)"
                             : "rotate(0deg)",
                         transition: "transform 0.2s",
@@ -143,7 +162,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                     </Typography.Text>
                   </div>
 
-                  {activeGroup[group.city] === "recipient" && (
+                  {groupState.activeGroups[group.city] === "recipient" && (
                     <List
                       dataSource={group.asRecipient}
                       style={{ margin: 0, padding: 0 }}
