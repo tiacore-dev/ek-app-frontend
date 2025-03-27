@@ -1,0 +1,44 @@
+/* Базовые стили для DatePicker */
+.responsive-date-picker {
+  width: 250px;
+}
+
+.vertical-date-picker .ant-picker-panels {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Мобильные стили */
+.vertical-date-picker.mobile {
+  width: 100vw !important;
+  max-width: 100vw;
+  left: 0 !important;
+}
+
+.vertical-date-picker.mobile .ant-picker-panels {
+  flex-direction: column !important;
+}
+
+.vertical-date-picker.mobile .ant-picker-panel {
+  width: 100% !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.vertical-date-picker.mobile .ant-picker-body {
+  padding: 8px;
+}
+
+@media (max-width: 768px) {
+  .responsive-date-picker {
+    width: 100% !important;
+    max-width: 300px;
+  }
+}
+
+/* Улучшение touch-зон */
+/* .ant-picker-cell-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+} */
