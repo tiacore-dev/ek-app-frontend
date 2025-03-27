@@ -30,6 +30,7 @@ export const ShiftsPage: React.FC = () => {
     );
   }, [dispatch]);
 
+  // Инициализируем параметры запроса с учетом сохраненных фильтров
   const [queryParams, setQueryParams] = React.useState<IShiftsQueryParams>({
     limit: 10,
     offset: 0,
@@ -40,6 +41,16 @@ export const ShiftsPage: React.FC = () => {
   const isMobile = useMobileDetection();
   const { data, isLoading, isError, error } = useShiftsQuery(queryParams);
 
+  // Обновляем параметры запроса при изменении фильтров в Redux
+  useEffect(() => {
+    setQueryParams((prev) => ({
+      ...prev,
+      date_from: dateFrom,
+      date_to: dateTo,
+      offset: 0, // Сбрасываем пагинацию при изменении фильтров
+    }));
+  }, [dateFrom, dateTo]);
+
   const handleDateChange = (
     dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
     dateStrings: [string, string]
@@ -49,35 +60,27 @@ export const ShiftsPage: React.FC = () => {
         dateFrom: dates[0].valueOf(),
         dateTo: dates[1].valueOf(),
       };
-      setQueryParams({
-        ...queryParams,
-        ...newDates,
-      });
       dispatch(setShiftsDateFilter(newDates));
     } else {
-      const { date_from, date_to, ...rest } = queryParams;
-      setQueryParams(rest);
       dispatch(resetShiftsDateFilter());
     }
   };
 
   const handlePaginationChange = (page: number, pageSize: number) => {
-    setQueryParams({
-      ...queryParams,
+    setQueryParams((prev) => ({
+      ...prev,
       limit: pageSize,
       offset: (page - 1) * pageSize,
-    });
+    }));
   };
 
   const handleResetDateFilters = () => {
-    const { date_from, date_to, ...rest } = queryParams;
-    setQueryParams(rest);
     dispatch(resetShiftsDateFilter());
   };
 
   const paginationConfig = {
     current: queryParams.offset
-      ? queryParams.offset / queryParams.limit! + 1
+      ? queryParams.offset / queryParams.limit + 1
       : 1,
     pageSize: queryParams.limit,
     total: data?.total,

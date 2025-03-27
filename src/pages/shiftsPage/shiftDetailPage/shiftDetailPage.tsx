@@ -25,7 +25,7 @@ export const ShiftDetailPage: React.FC = () => {
           { label: "Главная страница", to: "/home" },
           { label: "Рейсы", to: "/shifts" },
           {
-            label: `Рейс ${dayjs(data.date_start).format("DD.MM.YYYY")}`,
+            label: `Рейс ${dayjs(data.date).format("DD.MM.YYYY")}`,
             to: `/shifts/${shift_id}`,
           },
         ])
