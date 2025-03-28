@@ -1,16 +1,42 @@
 import { IListManifest } from "../../../../types/shifts";
 
-export const groupManifestsByCity = (manifests: IListManifest[]) => {
-  const cities = new Set<string>();
+interface GroupedManifest {
+  city: string;
+  asSender: IListManifest[];
+  asRecipient: IListManifest[];
+}
+
+export const groupManifestsByCity = (
+  manifests: IListManifest[]
+): GroupedManifest[] => {
+  // Используем Map для более эффективного хранения и доступа
+  const cityMap = new Map<
+    string,
+    { asSender: IListManifest[]; asRecipient: IListManifest[] }
+  >();
 
   manifests.forEach((manifest) => {
-    if (manifest.sender) cities.add(manifest.sender);
-    if (manifest.recipient) cities.add(manifest.recipient);
+    // Обрабатываем отправителя
+    if (manifest.sender) {
+      if (!cityMap.has(manifest.sender)) {
+        cityMap.set(manifest.sender, { asSender: [], asRecipient: [] });
+      }
+      cityMap.get(manifest.sender)!.asSender.push(manifest);
+    }
+
+    // Обрабатываем получателя
+    if (manifest.recipient) {
+      if (!cityMap.has(manifest.recipient)) {
+        cityMap.set(manifest.recipient, { asSender: [], asRecipient: [] });
+      }
+      cityMap.get(manifest.recipient)!.asRecipient.push(manifest);
+    }
   });
 
-  return Array.from(cities).map((city) => ({
+  // Преобразуем Map в массив объектов
+  return Array.from(cityMap.entries()).map(([city, groups]) => ({
     city,
-    asSender: manifests.filter((m) => m.sender === city),
-    asRecipient: manifests.filter((m) => m.recipient === city),
+    asSender: groups.asSender,
+    asRecipient: groups.asRecipient,
   }));
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button, Divider, List } from "antd";
@@ -30,20 +30,69 @@ export const ShiftDetailPage: React.FC = () => {
 
   const { data, isLoading, isError } = useShiftQuery(shift_id!);
 
+  const handleGoBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
+  const breadcrumbs = useMemo(
+    () => [
+      { label: "Главная страница", to: "/home" },
+      { label: "Рейсы", to: "/shifts" },
+      { label: `Рейс`, to: `/shifts/${shift_id}` },
+    ],
+    [shift_id]
+  );
+
   useEffect(() => {
     if (data) {
-      dispatch(
-        setBreadcrumbs([
-          { label: "Главная страница", to: "/home" },
-          { label: "Рейсы", to: "/shifts" },
-          {
-            label: `Рейс`,
-            to: `/shifts/${shift_id}`,
-          },
-        ])
-      );
+      dispatch(setBreadcrumbs(breadcrumbs));
     }
-  }, [data, dispatch, shift_id]);
+  }, [data, dispatch, breadcrumbs]);
+
+  const extraPaymentsContent = useMemo(() => {
+    if (!data?.extra_payments?.length) {
+      return <Typography.Paragraph>—</Typography.Paragraph>;
+    }
+
+    return (
+      <List
+        dataSource={data.extra_payments}
+        renderItem={(payment) => (
+          <List.Item>
+            <Typography.Text strong>{payment.description}</Typography.Text>{" "}
+            {payment.summ} руб.
+          </List.Item>
+        )}
+      />
+    );
+  }, [data?.extra_payments]);
+
+  const dateRangeText = useMemo(() => {
+    const startDate = formatDateSafe(data?.date_start);
+    const finishDate =
+      data?.date_finish && isValidDate(data.date_finish)
+        ? ` - ${formatDateSafe(data.date_finish)}`
+        : "";
+    return `${startDate}${finishDate}`;
+  }, [data?.date_start, data?.date_finish]);
+
+  const manifestsTable = useMemo(
+    () =>
+      isMobile ? (
+        <MobileManifestsList
+          data={data?.manifests || []}
+          isLoading={false}
+          shiftId={shift_id!}
+        />
+      ) : (
+        <DesktopManifestsTable
+          data={data?.manifests || []}
+          rowKey="id"
+          shiftId={shift_id!}
+        />
+      ),
+    [isMobile, data?.manifests, shift_id]
+  );
 
   return (
     <div style={{ padding: "20px" }}>
@@ -56,10 +105,7 @@ export const ShiftDetailPage: React.FC = () => {
           </Divider>
 
           <Typography.Paragraph>
-            <strong>Даты:</strong> {formatDateSafe(data?.date_start)}
-            {data?.date_finish && isValidDate(data.date_finish)
-              ? ` - ${formatDateSafe(data.date_finish)}`
-              : ""}
+            <strong>Даты:</strong> {dateRangeText}
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Авто:</strong> {data?.auto || "—"}
@@ -78,38 +124,10 @@ export const ShiftDetailPage: React.FC = () => {
           </Typography.Paragraph>
 
           <Divider orientation="left">Дополнительные платежи</Divider>
-          {data?.extra_payments?.length ? (
-            <List
-              dataSource={data.extra_payments}
-              renderItem={(payment) => (
-                <List.Item>
-                  <Typography.Text strong>
-                    {payment.description}
-                  </Typography.Text>{" "}
-                  {payment.summ} руб.
-                </List.Item>
-              )}
-            />
-          ) : (
-            <Typography.Paragraph>—</Typography.Paragraph>
-          )}
+          {extraPaymentsContent}
 
           <Divider orientation="left">Манифесты</Divider>
-          <div style={{ margin: "0 -20px" }}>
-            {isMobile ? (
-              <MobileManifestsList
-                data={data?.manifests || []}
-                isLoading={false}
-                shiftId={shift_id!}
-              />
-            ) : (
-              <DesktopManifestsTable
-                data={data?.manifests || []}
-                rowKey="id"
-                shiftId={shift_id!}
-              />
-            )}
-          </div>
+          <div style={{ margin: "0 -20px" }}>{manifestsTable}</div>
         </div>
       )}
       {isError && (
@@ -118,7 +136,7 @@ export const ShiftDetailPage: React.FC = () => {
             Ошибка загрузки данных
           </Typography.Text>
           <div style={{ marginTop: 16 }}>
-            <Button type="primary" onClick={() => navigate(-1)}>
+            <Button type="primary" onClick={handleGoBack}>
               Назад
             </Button>
           </div>

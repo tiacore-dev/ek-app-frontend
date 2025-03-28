@@ -1,78 +1,12 @@
+// src/pages/LoginPage.tsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { axiosInstance } from "../../axiosConfig";
-import {
-  Button,
-  Form,
-  Input,
-  Typography,
-  Spin,
-  Row,
-  Col,
-  notification,
-} from "antd";
-
-interface ILoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface ILoginRespone {
-  fullName: string;
-  username: string;
-  token: string;
-  permissions: string[];
-}
-
-type ApiError = {
-  response?: {
-    data: {
-      message: string;
-    };
-  };
-};
+// import { useNavigate } from "react-router-dom";
+import { Button, Form, Input, Typography, Spin, Row, Col } from "antd";
+import { useLogin } from "../../hooks/auth/useLogin";
+import { ILoginRequest } from "../../types/authTypes";
 
 export const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
-
-  const loginMutation = useMutation<ILoginRespone, Error, ILoginRequest>({
-    mutationFn: async (data) => {
-      const url = process.env.REACT_APP_API_URL;
-      if (!url) {
-        throw new Error("REACT_APP_API_URL is not defined");
-      }
-
-      try {
-        const response = await axiosInstance.post<ILoginRespone>(
-          `${url}/auth/login`,
-          data
-        );
-        return response.data;
-      } catch (error: unknown) {
-        const apiError = error as ApiError;
-        if (apiError.response) {
-          const errorMessage =
-            apiError.response.data.message || "Ошибка при авторизации";
-          throw new Error(errorMessage);
-        } else {
-          throw new Error("Неизвестная ошибка");
-        }
-      }
-    },
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userData", JSON.stringify(data));
-      navigate("/home");
-    },
-    onError: (error) => {
-      notification.error({
-        message: "Ошибка",
-        description: error.message,
-        placement: "topRight",
-      });
-    },
-  });
+  const loginMutation = useLogin();
 
   const onFinish = (values: ILoginRequest) => {
     loginMutation.mutate(values);

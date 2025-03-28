@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { Typography, Card, Spin, Row, Col } from "antd";
 import dayjs from "dayjs";
 import { IShiftsQueryParams } from "../../types/shifts";
@@ -51,41 +51,52 @@ export const ShiftsPage: React.FC = () => {
 
   const { data, isLoading, isError, error } = useShiftsQuery(queryParams);
 
-  const handleDateChange = (
-    dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
-    dateStrings: [string, string]
-  ) => {
-    if (dates && dates[0] && dates[1]) {
-      dispatch(
-        setShiftsDateFilter({
-          dateFrom: dates[0].valueOf(),
-          dateTo: dates[1].valueOf(),
-        })
-      );
-      dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
-    } else {
-      dispatch(resetShiftsDateFilter());
-      dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
-    }
-  };
+  const handleDateChange = useCallback(
+    (
+      dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
+      dateStrings: [string, string]
+    ) => {
+      if (dates && dates[0] && dates[1]) {
+        dispatch(
+          setShiftsDateFilter({
+            dateFrom: dates[0].valueOf(),
+            dateTo: dates[1].valueOf(),
+          })
+        );
+        dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
+      } else {
+        dispatch(resetShiftsDateFilter());
+        dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
+      }
+    },
+    [dispatch, pageSize]
+  );
 
-  const handleResetDateFilters = () => {
+  const handleResetDateFilters = useCallback(() => {
     dispatch(resetShiftsDateFilter());
     dispatch(setShiftsPagination({ currentPage: 1, pageSize }));
-  };
+  }, [dispatch, pageSize]);
 
-  const handlePaginationChange = (page: number, newPageSize: number) => {
-    dispatch(setShiftsPagination({ currentPage: page, pageSize: newPageSize }));
-  };
+  const handlePaginationChange = useCallback(
+    (page: number, newPageSize: number) => {
+      dispatch(
+        setShiftsPagination({ currentPage: page, pageSize: newPageSize })
+      );
+    },
+    [dispatch]
+  );
 
-  const paginationConfig = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: data?.total,
-    onChange: handlePaginationChange,
-    showSizeChanger: true,
-    pageSizeOptions: ["10", "20", "50", "100"],
-  };
+  const paginationConfig = useMemo(
+    () => ({
+      current: currentPage,
+      pageSize: pageSize,
+      total: data?.total,
+      onChange: handlePaginationChange,
+      showSizeChanger: true,
+      pageSizeOptions: ["10", "20", "50", "100"],
+    }),
+    [currentPage, pageSize, data?.total, handlePaginationChange]
+  );
 
   return (
     <div style={{ padding: "10px 20px 20px 20px" }}>

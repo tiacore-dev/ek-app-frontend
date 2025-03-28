@@ -1,58 +1,62 @@
-// src/components/UserCard/UserCard.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, Space, List, Avatar, Typography } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { LogoutButton } from "../../../components/logoutButton";
-import { ILoginRespone } from "../../loginPage/loginPage";
+import { ILoginResponse } from "../../../types/authTypes";
 
 interface UserCardProps {
-  user: ILoginRespone;
+  user: ILoginResponse;
 }
 
-export const UserCard: React.FC<UserCardProps> = ({ user }) => {
+export const UserCard: React.FC<UserCardProps> = React.memo(({ user }) => {
+  const userInfoItems = useMemo(
+    () => [
+      {
+        label: "Полное имя",
+        value: user.fullName,
+      },
+      {
+        label: "Логин",
+        value: user.username,
+      },
+      {
+        label: "Права доступа",
+        value: user.permissions?.join(", ") || "Не указано",
+      },
+    ],
+    [user.fullName, user.username, user.permissions]
+  );
+
+  const cardTitle = useMemo(
+    () => (
+      <Space>
+        <Avatar
+          size="large"
+          icon={<UserOutlined style={{ color: "#ef7e1a" }} />}
+          style={{ backgroundColor: "#f8f8f8" }}
+        />
+        <Typography.Title level={4} style={{ margin: 0 }}>
+          Мой аккаунт
+        </Typography.Title>
+      </Space>
+    ),
+    []
+  );
+
   return (
-    <Card
-      title={
-        <Space>
-          <Avatar
-            size="large"
-            icon={<UserOutlined style={{ color: "#ef7e1a" }} />}
-            style={{ backgroundColor: "#f8f8f8" }} // Фон можно тоже изменить
-          />
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Мой аккаунт
-          </Typography.Title>
-        </Space>
-      }
-      extra={<LogoutButton />}
-    >
+    <Card title={cardTitle} extra={<LogoutButton />}>
       <List
         itemLayout="horizontal"
-        dataSource={[
-          {
-            label: "Полное имя",
-            value: user.fullName,
-          },
-          {
-            label: "Логин",
-            value: user.username,
-          },
-          {
-            label: "Права доступа",
-            // value: user.permissions.join(", "),
-          },
-        ]}
+        dataSource={userInfoItems}
         renderItem={(item) => (
           <List.Item>
             <List.Item.Meta
               title={<Typography.Text strong>{item.label}</Typography.Text>}
-              description={
-                <Typography.Text>{item.value || "Не указано"}</Typography.Text>
-              }
+              description={<Typography.Text>{item.value}</Typography.Text>}
             />
           </List.Item>
         )}
       />
     </Card>
   );
-};
+});
