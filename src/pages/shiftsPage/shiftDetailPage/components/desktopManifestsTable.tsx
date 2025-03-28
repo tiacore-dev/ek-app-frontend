@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { Table, Typography, Collapse } from "antd";
+import React from "react";
+import { Table, Typography, Collapse, Divider } from "antd";
 import { ManifestsComponentProps } from "../../../../types/shifts";
 import { getManifestsColumns } from "./manifestsColumns";
 import { groupManifestsByCity } from "./manifestGrouping";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../../redux/store";
+import { setActiveCity } from "../../../../redux/slices/shiftGroupsSlice";
 
 const { Panel } = Collapse;
 
@@ -11,65 +14,95 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> = ({
   rowKey = "id",
   shiftId,
 }) => {
-  const [expandedCities, setExpandedCities] = useState<string[]>([]);
-  const [expandedGroups, setExpandedGroups] = useState<
-    Record<string, string[]>
-  >({});
+  const dispatch = useDispatch();
+  const groupState = useSelector(
+    (state: RootState) =>
+      state.shiftGroups[shiftId] || {
+        activeCity: null,
+        activeGroups: {},
+      }
+  );
 
   const groupedManifests = groupManifestsByCity(data || []);
 
   const handleCityChange = (keys: string | string[]) => {
-    setExpandedCities(Array.isArray(keys) ? keys : [keys]);
-  };
-
-  const handleGroupChange = (city: string, keys: string | string[]) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [city]: Array.isArray(keys) ? keys : [keys],
-    }));
+    const activeKeys = Array.isArray(keys) ? keys : [keys];
+    const city =
+      activeKeys.length > 0 ? activeKeys[0].replace("city-", "") : null;
+    dispatch(setActiveCity({ shiftId, city }));
   };
 
   return (
     <Collapse
-      activeKey={expandedCities}
+      activeKey={groupState.activeCity ? [`city-${groupState.activeCity}`] : []}
       onChange={handleCityChange}
       ghost
       style={{ background: "none" }}
+      accordion
     >
       {groupedManifests.map((group) => (
         <Panel
-          header={<Typography.Text strong>{group.city}</Typography.Text>}
+          header={
+            <Typography.Text strong>
+              {group.city}
+              <Typography.Text style={{ marginLeft: 4 }}>
+                ({group.asSender.length + group.asRecipient.length})
+              </Typography.Text>
+            </Typography.Text>
+          }
           key={`city-${group.city}`}
+          style={{
+            padding: "8px 0",
+          }}
         >
-          <Collapse
-            ghost
-            activeKey={expandedGroups[group.city] || []}
-            onChange={(keys) => handleGroupChange(group.city, keys)}
-          >
-            {group.asSender.length > 0 && (
-              <Panel header={`Отправления`} key={`${group.city}-sender`}>
-                <Table
-                  columns={getManifestsColumns(shiftId, "sender")} // Передаем тип
-                  dataSource={group.asSender}
-                  rowKey={rowKey}
-                  pagination={false}
-                  size="small"
-                />
-              </Panel>
-            )}
+          {/* Группа отправлений */}
+          {group.asSender.length > 0 && (
+            <div style={{ marginBottom: 8 }}>
+              {" "}
+              {/* Уменьшен отступ */}
+              <Divider
+                orientation="left"
+                style={{
+                  margin: "4px 0",
+                  fontSize: 14,
+                  lineHeight: 1.2,
+                }}
+              >
+                Отправления ({group.asSender.length})
+              </Divider>
+              <Table
+                columns={getManifestsColumns(shiftId, "sender")}
+                dataSource={group.asSender}
+                rowKey={rowKey}
+                pagination={false}
+                size="small"
+                style={{ marginBottom: 8 }}
+              />
+            </div>
+          )}
 
-            {group.asRecipient.length > 0 && (
-              <Panel header={`Поступления`} key={`${group.city}-recipient`}>
-                <Table
-                  columns={getManifestsColumns(shiftId, "recipient")} // Передаем тип
-                  dataSource={group.asRecipient}
-                  rowKey={rowKey}
-                  pagination={false}
-                  size="small"
-                />
-              </Panel>
-            )}
-          </Collapse>
+          {/* Группа поступлений */}
+          {group.asRecipient.length > 0 && (
+            <div>
+              <Divider
+                orientation="left"
+                style={{
+                  margin: "4px 0", // Уменьшен отступ
+                  fontSize: 14, // Можно уменьшить размер шрифта
+                  lineHeight: 1.2, // Уменьшаем межстрочный интервал
+                }}
+              >
+                Поступления ({group.asRecipient.length})
+              </Divider>
+              <Table
+                columns={getManifestsColumns(shiftId, "recipient")}
+                dataSource={group.asRecipient}
+                rowKey={rowKey}
+                pagination={false}
+                size="small"
+              />
+            </div>
+          )}
         </Panel>
       ))}
     </Collapse>

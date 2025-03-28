@@ -54,6 +54,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             borderRadius: 6,
             border: "1px solid #f0f0f0",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            margin: "0 0 8px 0", // Добавляем только нижний отступ
           }}
           bodyStyle={{
             padding: groupState.activeCity === group.city ? "8px 10px" : "0",
@@ -75,7 +76,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             >
               <CaretRightOutlined
                 style={{
-                  marginRight: 8,
+                  marginRight: 4,
                   transform:
                     groupState.activeCity === group.city
                       ? "rotate(90deg)"
@@ -86,12 +87,15 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
               />
               <Typography.Text strong style={{ fontSize: "15px" }}>
                 {group.city}
+                <Typography.Text style={{ marginLeft: 4 }}>
+                  ({group.asSender.length + group.asRecipient.length})
+                </Typography.Text>
               </Typography.Text>
             </div>
           }
         >
           {groupState.activeCity === group.city && (
-            <div style={{ marginLeft: 6 }}>
+            <div style={{ marginLeft: 2 }}>
               {group.asSender.length > 0 && (
                 <div>
                   <div
@@ -103,18 +107,21 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       justifyContent: "flex-end", // Добавьте это свойство
                       position: "relative", // Добавляем для псевдоэлемента
                       paddingBottom: 4, // Отступ для полосы
-                      marginRight: 4, // Добавьте отступ справа для лучшего вида
+                      // marginRight: 4, // Добавьте отступ справа для лучшего вида
                     }}
                   >
                     <Typography.Text strong style={{ fontSize: "14px" }}>
-                      Отправления
+                      Отправления{" "}
+                      <Typography.Text>
+                        ({group.asSender.length})
+                      </Typography.Text>
                     </Typography.Text>
                     <div
                       style={{
                         position: "absolute",
                         bottom: 0,
                         left: "50%",
-                        right: 0,
+                        right: "1%",
                         height: 1,
                         backgroundColor: "#ef7e1a",
                       }}
@@ -146,18 +153,21 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
                       justifyContent: "flex-end", // Добавьте это свойство
                       position: "relative", // Добавляем для псевдоэлемента
                       paddingBottom: 4, // Отступ для полосы
-                      marginRight: 4, // Добавьте отступ справа для лучшего вида
+                      // marginRight: 4, // Добавьте отступ справа для лучшего вида
                     }}
                   >
                     <Typography.Text strong style={{ fontSize: "14px" }}>
-                      Поступления
+                      Поступления{" "}
+                      <Typography.Text>
+                        ({group.asRecipient.length})
+                      </Typography.Text>
                     </Typography.Text>
                     <div
                       style={{
                         position: "absolute",
                         bottom: 0,
                         left: "50%",
-                        right: 0,
+                        right: "1%",
                         height: 1,
                         backgroundColor: "#ef7e1a",
                       }}

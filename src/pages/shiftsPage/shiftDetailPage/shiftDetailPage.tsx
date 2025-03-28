@@ -95,7 +95,7 @@ export const ShiftDetailPage: React.FC = () => {
           )}
 
           <Divider orientation="left">Манифесты</Divider>
-          <div style={{ margin: "0 -24px" }}>
+          <div style={{ margin: "0 -20px" }}>
             {isMobile ? (
               <MobileManifestsList
                 data={data?.manifests || []}

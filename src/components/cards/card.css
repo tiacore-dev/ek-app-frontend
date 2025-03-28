@@ -1,13 +1,13 @@
 .clickable-card {
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   transition: all 0.2s;
 }
 
 .clickable-card:hover {
-  box-shadow: 0 2px 12px rgba(36, 68, 181, 0.15);
+  box-shadow: 0 2px 8x rgba(36, 68, 181, 0.15);
 }
 
 .clickable-card .ant-card-head {
   border-left: 4px solid #2444b5;
-  padding-left: 12px;
+  padding-left: 8px;
 }

@@ -34,6 +34,11 @@ export const ManifestCard: React.FC<ManifestCardProps> = ({
         className="clickable-card"
         size="small"
         title={`${manifest.number}`}
+        style={{
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box", // Важно!
+        }}
       >
         <Typography.Text strong style={{ color: "#2444b5" }}>
           {type === "sender" ? "Получатель: " : "Отправитель: "}
