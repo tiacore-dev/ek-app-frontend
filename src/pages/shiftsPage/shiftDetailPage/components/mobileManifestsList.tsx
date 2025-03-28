@@ -68,7 +68,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           }}
         >
           <Typography.Text strong style={{ fontSize: "14px" }}>
-            Отправления{" "}
+            Загрузить{" "}
             <Typography.Text>({group.asSender.length})</Typography.Text>
           </Typography.Text>
           <div
@@ -111,7 +111,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           }}
         >
           <Typography.Text strong style={{ fontSize: "14px" }}>
-            Поступления{" "}
+            Выгрузить{" "}
             <Typography.Text>({group.asRecipient.length})</Typography.Text>
           </Typography.Text>
           <div
