@@ -2,6 +2,7 @@
   "name": "ek-app-frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@ant-design/cssinjs": "^1.23.0",
     "@ant-design/icons": "^6.0.0",
@@ -29,9 +30,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -53,6 +54,8 @@
     ]
   },
   "devDependencies": {
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.2.1",
     "workbox-webpack-plugin": "^7.3.0"
   }
 }
