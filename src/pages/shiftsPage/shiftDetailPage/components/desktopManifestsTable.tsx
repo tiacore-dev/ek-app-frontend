@@ -59,7 +59,6 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> = ({
           {group.asSender.length > 0 && (
             <div style={{ marginBottom: 8 }}>
               {" "}
-              {/* Уменьшен отступ */}
               <Divider
                 orientation="left"
                 style={{
@@ -69,6 +68,7 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> = ({
                 }}
               >
                 Отправления ({group.asSender.length})
+                {/* Отгрузить ({group.asSender.length}) */}
               </Divider>
               <Table
                 columns={getManifestsColumns(shiftId, "sender")}

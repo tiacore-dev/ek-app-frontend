@@ -39,7 +39,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           },
           {
             label: "Права доступа",
-            value: user.permissions.join(", "),
+            // value: user.permissions.join(", "),
           },
         ]}
         renderItem={(item) => (
