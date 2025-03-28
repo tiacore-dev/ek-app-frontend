@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+// import { useQuery } from "@tanstack/react-query";
 import { Spin, Card, Typography, Button, Divider, List } from "antd";
 import dayjs from "dayjs";
 import { useShiftQuery } from "../../../hooks/shifts/useShiftQuery";
