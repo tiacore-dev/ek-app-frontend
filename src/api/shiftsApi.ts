@@ -22,7 +22,7 @@ export const fetchShiftById = async (
 ): Promise<IShiftResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(`${url}shift/${shiftId}/get`, {
+  const response = await axiosInstance.get(`${url}/shift/${shiftId}/get`, {
     headers: getAuthHeaders(),
   });
   console.log("[Server Response Data]", response.data);
