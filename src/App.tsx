@@ -20,6 +20,7 @@ import "dayjs/locale/ru";
 import { ConfigProvider } from "antd";
 import ru_RU from "antd/locale/ru_RU";
 import { store } from "./redux/store"; // Импортируйте store
+import theme from "./theme/themeConfig";
 
 dayjs.locale("ru");
 
@@ -29,7 +30,7 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <ConfigProvider locale={ru_RU}>
+        <ConfigProvider locale={ru_RU} theme={theme}>
           <Router>
             <Routes>
               <Route path="/login" element={<LoginPage />} />

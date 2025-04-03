@@ -4,7 +4,9 @@ import {
   IShiftResponse,
   IListShiftResponse,
   IPaginateResponse,
-  IListManifest,
+  IManifestResponse,
+  IManifestLoadingRequest,
+  // IManifestLoadingResponse,
 } from "../types/shifts";
 
 const getAuthHeaders = () => {
@@ -20,7 +22,7 @@ export const fetchShiftById = async (
 ): Promise<IShiftResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(`${url}/shift/${shiftId}/get`, {
+  const response = await axiosInstance.get(`${url}shift/${shiftId}/get`, {
     headers: getAuthHeaders(),
   });
   console.log("[Server Response Data]", response.data);
@@ -29,7 +31,7 @@ export const fetchShiftById = async (
 
 export const fetchManifestById = async (
   manifestId: string
-): Promise<IListManifest> => {
+): Promise<IManifestResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
   const response = await axiosInstance.get(
@@ -54,5 +56,39 @@ export const fetchShifts = async (params: {
     headers: getAuthHeaders(),
     params,
   });
+  return response.data;
+};
+
+export const postManifestLoading = async (
+  manifestId: string,
+  data: IManifestLoadingRequest
+): Promise<void> => {
+  const url = process.env.REACT_APP_API_URL;
+  const response = await axiosInstance.post(
+    `${url}/manifest-loading/${manifestId}/post`,
+    data,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+  console.log("[Server Response Data]", response.data);
+
+  return response.data;
+};
+
+export const postManifestUploading = async (
+  manifestId: string,
+  data: IManifestLoadingRequest
+): Promise<void> => {
+  const url = process.env.REACT_APP_API_URL;
+  const response = await axiosInstance.post(
+    `${url}/manifest-uploading/${manifestId}/post`,
+    data,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+  console.log("[Server Response Data]", response.data);
+
   return response.data;
 };

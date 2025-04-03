@@ -1,10 +1,24 @@
-import React, { useEffect, useMemo } from "react";
-import { Typography, Row, Col } from "antd";
+import React, { useEffect, useMemo, useState } from "react";
+import { Spin, Row, Col, Typography, Button, Divider } from "antd";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
+import { ShiftDetails } from "../shiftsPage/shiftDetailPage/components/shiftDetail";
+import { useNavigate } from "react-router-dom";
+import { useShiftQuery } from "../../hooks/shifts/useShiftQuery";
+import { useShiftsQuery } from "../../hooks/shifts/useShiftsQuery";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { DesktopManifestsTable } from "../shiftsPage/shiftDetailPage/components/desktopManifestsTable";
+import { MobileManifestsList } from "../shiftsPage/shiftDetailPage/components/mobileManifestsList";
 
 export const HomePage: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isMobile = useMobileDetection();
+  const [areDetailsCollapsed, setAreDetailsCollapsed] = useState(false);
+
+  const { data: shiftsData } = useShiftsQuery({ limit: 1, offset: 0 });
+  const lastShiftId = shiftsData?.data?.[0]?.id;
+  const { data: shiftData, isLoading } = useShiftQuery(lastShiftId || "");
 
   const breadcrumbs = useMemo(() => [{ label: " ", to: "/home" }], []);
 
@@ -12,18 +26,52 @@ export const HomePage: React.FC = () => {
     dispatch(setBreadcrumbs(breadcrumbs));
   }, [dispatch, breadcrumbs]);
 
+  const manifestsTable = useMemo(() => {
+    if (!shiftData?.manifests?.length) return null;
+
+    return isMobile ? (
+      <MobileManifestsList
+        data={shiftData.manifests}
+        isLoading={false}
+        shiftId={lastShiftId || ""}
+      />
+    ) : (
+      <DesktopManifestsTable
+        data={shiftData.manifests}
+        rowKey="id"
+        shiftId={lastShiftId || ""}
+      />
+    );
+  }, [isMobile, shiftData?.manifests, lastShiftId]);
+
+  if (isLoading) return <Spin size="large" />;
+
   return (
-    <Row justify="center" align="middle" style={{ minHeight: "80vh" }}>
-      <Col xs={24} sm={20} md={16} lg={12} xl={8}>
-        <Typography.Title
-          level={1}
-          style={{
-            textAlign: "center",
-            marginBottom: 0,
-          }}
-        >
-          Вы успешно авторизовались!
-        </Typography.Title>
+    <Row justify="center">
+      <Col xs={24} sm={24} md={22} lg={20} xl={18}>
+        {shiftData ? (
+          <>
+            <ShiftDetails
+              shift={shiftData}
+              showFullDetails={!areDetailsCollapsed}
+              detailsTitle="Текущий рейс"
+              onDetailsTitleClick={() =>
+                setAreDetailsCollapsed(!areDetailsCollapsed)
+              }
+            >
+              {shiftData.manifests?.length ? (
+                <div style={{ margin: "0 -20px" }}>{manifestsTable}</div>
+              ) : null}
+            </ShiftDetails>
+          </>
+        ) : (
+          <div style={{ textAlign: "center", marginTop: "20vh" }}>
+            <Typography.Title level={3}>Нет активных рейсов</Typography.Title>
+            <Typography.Paragraph>
+              На данный момент нет доступных рейсов для отображения
+            </Typography.Paragraph>
+          </div>
+        )}
       </Col>
     </Row>
   );

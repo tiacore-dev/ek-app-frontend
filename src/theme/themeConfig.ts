@@ -11,11 +11,14 @@ const theme: ThemeConfig = {
   },
   components: {
     Button: {
-      colorPrimary: "#2444b5", // Основной цвет кнопок
-      colorPrimaryHover: "#1a3490", // Цвет при наведении (можно сделать темнее на 10-15%)
-      colorPrimaryActive: "#12276d", // Цвет при нажатии (еще темнее)
-      colorLink: "#2444b5", // Цвет ссылочных кнопок
-      colorLinkHover: "#1a3490", // Ссылка при наведении
+      colorPrimary: "#2444b5", // Фон primary кнопок
+      colorPrimaryHover: "#1a3490", // Фон при наведении
+      colorPrimaryActive: "#12276d", // Фон при нажатии
+      colorPrimaryBorder: "transparent", // Граница primary кнопок
+      colorTextLightSolid: "#ffffff", // Текст на primary кнопках
+      // Для ghost кнопок
+      colorBgTextHover: "rgba(36, 68, 181, 0.1)",
+      colorBgTextActive: "rgba(36, 68, 181, 0.2)",
     },
     Menu: {
       itemSelectedColor: "#2444b5",

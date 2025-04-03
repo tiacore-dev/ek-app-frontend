@@ -17,7 +17,7 @@ export const UserCard: React.FC<UserCardProps> = React.memo(({ user }) => {
       },
       {
         label: "Логин",
-        value: user.username,
+        value: user.username || "Не указано",
       },
       {
         label: "Права доступа",
