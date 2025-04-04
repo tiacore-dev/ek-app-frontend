@@ -71,12 +71,20 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   return (
     <div onClick={(e) => e.stopPropagation()}>
       {type === "sender" && canLoad && (
-        <Button size="small" onClick={showModal}>
+        <Button
+          size="small"
+          onClick={showModal}
+          className="manifest-action-button"
+        >
           Загружено
         </Button>
       )}
       {type === "recipient" && canUnload && (
-        <Button size="small" onClick={showModal}>
+        <Button
+          size="small"
+          onClick={showModal}
+          className="manifest-action-button"
+        >
           Выгружено
         </Button>
       )}

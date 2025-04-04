@@ -11,3 +11,14 @@
   border-left: 4px solid #2444b5;
   padding-left: 8px;
 }
+
+.manifest-action-button {
+  border-color: #ef7e1a !important;
+  border-width: 1.3px !important;
+  border-radius: 5px !important;
+  background-color: #ef7d1a06;
+}
+
+.manifest-action-button:hover {
+  border-color: #d96c0d !important;
+}

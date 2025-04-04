@@ -4,6 +4,20 @@ import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { Typography } from "antd";
 import { useMemo } from "react";
+import { ManifestActions } from "./manifestActions";
+
+const getStatusColor = (status?: string, type?: string) => {
+  switch (status) {
+    case "Готов к загрузке":
+      return type === "sender" ? "#dbac66" : "#60c760";
+    case "Манифест в пути":
+      return type === "sender" ? "#60c760" : "#dbac66";
+    case "Манифест выгружен":
+      return type === "sender" ? "#b6b6b6" : "#60c760";
+    default:
+      return "#b6b6b6";
+  }
+};
 
 export const useManifestsColumns = (
   shift_id: string,
@@ -57,6 +71,31 @@ export const useManifestsColumns = (
         dataIndex: "volume",
         key: "volume",
         width: 80,
+      },
+      {
+        title: "Статус",
+        dataIndex: "status",
+        key: "status",
+        width: 80,
+        render: (status: string) => (
+          <Typography.Text
+            style={{ color: getStatusColor(status, type), fontSize: 12 }}
+          >
+            {status || "Нет статуса"}
+          </Typography.Text>
+        ),
+      },
+      {
+        title: "Действия",
+        key: "actions",
+        width: 120,
+        render: (_: any, record: IListManifest) => (
+          <ManifestActions
+            type={type!}
+            status={record.status}
+            manifestId={record.id}
+          />
+        ),
       },
     ];
 

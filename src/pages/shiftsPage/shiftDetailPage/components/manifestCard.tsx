@@ -17,7 +17,7 @@ const formatDate = (timestamp?: number) => {
   return dayjs(timestamp).format("DD.MM.YYYY");
 };
 
-const getStatusColor = (status?: string, type?: string) => {
+export const getStatusColor = (status?: string, type?: string) => {
   switch (status) {
     case "Готов к загрузке":
       return type === "sender" ? "#dbac66" : "#60c760";
