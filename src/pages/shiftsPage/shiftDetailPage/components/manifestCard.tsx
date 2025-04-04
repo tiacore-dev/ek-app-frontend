@@ -1,3 +1,11 @@
+// import React, { useCallback } from "react";
+// import { Card, Typography, Space } from "antd";
+// import { Link } from "react-router-dom";
+// import { IListManifest } from "../../../../types/shifts";
+// import dayjs from "dayjs";
+// import "../../../../components/cards/card.css";
+// import { ManifestActions } from "./manifestActions";
+
 import React, { useCallback } from "react";
 import { Card, Typography, Space } from "antd";
 import { Link } from "react-router-dom";
@@ -10,14 +18,15 @@ interface ManifestCardProps {
   manifest: IListManifest;
   shiftId: string;
   type: "sender" | "recipient";
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }
-
 const formatDate = (timestamp?: number) => {
   if (!timestamp) return "—";
   return dayjs(timestamp).format("DD.MM.YYYY");
 };
 
-export const getStatusColor = (status?: string, type?: string) => {
+const getStatusColor = (status?: string, type?: string) => {
   switch (status) {
     case "Готов к загрузке":
       return type === "sender" ? "#dbac66" : "#60c760";
@@ -30,8 +39,17 @@ export const getStatusColor = (status?: string, type?: string) => {
   }
 };
 
+const hasActiveButton = (status?: string, type?: string) => {
+  const canLoad = !status || status === "Готов к загрузке";
+  const canUnload = !status || status === "Манифест в пути";
+
+  return (type === "sender" && canLoad) || (type === "recipient" && canUnload);
+};
+
 export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
   ({ manifest, shiftId, type }) => {
+    const isActive = hasActiveButton(manifest.status, type);
+
     const renderCounterparty = useCallback(
       () => (
         <>
@@ -79,7 +97,7 @@ export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
         }}
       >
         <Card
-          className="clickable-card"
+          className={`clickable-card ${!isActive ? "inactive-card" : ""}`}
           size="small"
           title={
             <div
