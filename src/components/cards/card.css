@@ -12,15 +12,34 @@
   padding-left: 8px;
 }
 
-.manifest-action-button {
-  border-color: #ef7e1a !important;
-  border-width: 1.3px !important;
-  border-radius: 5px !important;
-  background-color: #ef7d1a06;
+.sender-group-card .clickable-card .ant-card-head {
+  border-left: 4px solid #ef7e1a !important;
 }
 
-.manifest-action-button:hover {
+.manifest-action-button-load {
+  border-color: #ef7e1a !important;
+  color: #ef7e1a !important;
+  border-width: 1.3px !important;
+  border-radius: 5px !important;
+  background-color: #ef7d1a06 !important;
+}
+
+.manifest-action-button-load:hover {
   border-color: #d96c0d !important;
+  color: #d96c0d !important;
+}
+
+.manifest-action-button-unload {
+  border-color: #2444b5 !important;
+  color: #2444b5 !important;
+  border-width: 1.3px !important;
+  border-radius: 5px !important;
+  background-color: #2444b506 !important;
+}
+
+.manifest-action-button-unload:hover {
+  border-color: #1a3aa3 !important;
+  color: #1a3aa3 !important;
 }
 
 .inactive-card {

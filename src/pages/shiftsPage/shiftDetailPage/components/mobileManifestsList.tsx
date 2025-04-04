@@ -55,7 +55,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
 
   const renderSenderGroup = useCallback(
     (group: ReturnType<typeof groupManifestsByCity>[0]) => (
-      <div>
+      <div className="sender-group-card">
         <div
           onClick={() => toggleGroup(group.city, "sender")}
           style={{
@@ -67,7 +67,10 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             paddingBottom: 4,
           }}
         >
-          <Typography.Text strong style={{ fontSize: "14px" }}>
+          <Typography.Text
+            strong
+            style={{ fontSize: "14px", color: "#ef7e1a" }}
+          >
             Загрузить{" "}
             <Typography.Text>({group.asSender.length})</Typography.Text>
           </Typography.Text>
@@ -75,8 +78,8 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             style={{
               position: "absolute",
               bottom: 0,
-              left: "50%",
-              right: "1%",
+              left: "50%", // Начинается с 50% ширины
+              right: 0,
               height: 1,
               backgroundColor: "#ef7e1a",
             }}
@@ -86,9 +89,12 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           dataSource={group.asSender}
           style={{ margin: 0, padding: 0 }}
           renderItem={(item) => (
-            <div style={{ padding: "2px 0" }}>
-              <ManifestCard manifest={item} shiftId={shiftId} type="sender" />
-            </div>
+            <ManifestCard
+              manifest={item}
+              shiftId={shiftId}
+              type="sender"
+              labelColor="#ef7e1a"
+            />
           )}
         />
       </div>
@@ -110,7 +116,10 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             paddingBottom: 4,
           }}
         >
-          <Typography.Text strong style={{ fontSize: "14px" }}>
+          <Typography.Text
+            strong
+            style={{ fontSize: "14px", color: "#2444b5" }}
+          >
             Выгрузить{" "}
             <Typography.Text>({group.asRecipient.length})</Typography.Text>
           </Typography.Text>
@@ -118,10 +127,10 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             style={{
               position: "absolute",
               bottom: 0,
-              left: "50%",
-              right: "1%",
+              left: "50%", // Начинается с 50% ширины
+              right: 0,
               height: 1,
-              backgroundColor: "#ef7e1a",
+              backgroundColor: "#2444b5",
             }}
           />
         </div>
@@ -129,20 +138,18 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           dataSource={group.asRecipient}
           style={{ margin: 0, padding: 0 }}
           renderItem={(item) => (
-            <div>
-              <ManifestCard
-                manifest={item}
-                shiftId={shiftId}
-                type="recipient"
-              />
-            </div>
+            <ManifestCard
+              manifest={item}
+              shiftId={shiftId}
+              type="recipient"
+              labelColor="#2444b5"
+            />
           )}
         />
       </div>
     ),
     [toggleGroup, shiftId]
   );
-
   const renderCityCard = useCallback(
     (group: ReturnType<typeof groupManifestsByCity>[0]) => (
       <Card

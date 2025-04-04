@@ -5,7 +5,6 @@ import {
   postManifestLoading,
   postManifestUploading,
 } from "../../../../api/shiftsApi";
-import { useManifestMutation } from "../../../../hooks/shifts/useManifestMutation";
 
 interface ManifestActionsProps {
   type: "sender" | "recipient";
@@ -23,7 +22,7 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   const queryClient = useQueryClient();
 
   const canLoad = !status || status === "Готов к загрузке";
-  const canUnload = status === "Манифест в пути";
+  const canUnload = status === "Манифест в пути"; // Изменили условие - теперь только при точном совпадении
 
   const mutation = useMutation({
     mutationFn: (data: { comment?: string }) =>
@@ -45,6 +44,7 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   });
 
   const showModal = (e: React.MouseEvent) => {
+    if ((type === "recipient" && !canUnload) || mutation.isPending) return;
     e.preventDefault();
     e.stopPropagation();
     setIsModalVisible(true);
@@ -68,23 +68,32 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
     }
   };
 
+  // Определяем класс и стиль кнопки в зависимости от типа и статуса
+  const getButtonProps = () => {
+    if (type === "sender") {
+      return {
+        className: "manifest-action-button-load",
+        disabled: !canLoad || mutation.isPending,
+      };
+    } else {
+      return {
+        className: canUnload
+          ? "manifest-action-button-unload"
+          : "manifest-action-button-disabled",
+        disabled: !canUnload || mutation.isPending,
+      };
+    }
+  };
+
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      {type === "sender" && canLoad && (
-        <Button
-          size="small"
-          onClick={showModal}
-          className="manifest-action-button"
-        >
+      {type === "sender" && (
+        <Button size="small" onClick={showModal} {...getButtonProps()}>
           Загружено
         </Button>
       )}
-      {type === "recipient" && canUnload && (
-        <Button
-          size="small"
-          onClick={showModal}
-          className="manifest-action-button"
-        >
+      {type === "recipient" && (
+        <Button size="small" onClick={showModal} {...getButtonProps()}>
           Выгружено
         </Button>
       )}

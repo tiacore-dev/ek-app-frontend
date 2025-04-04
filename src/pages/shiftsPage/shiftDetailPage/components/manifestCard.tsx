@@ -1,11 +1,3 @@
-// import React, { useCallback } from "react";
-// import { Card, Typography, Space } from "antd";
-// import { Link } from "react-router-dom";
-// import { IListManifest } from "../../../../types/shifts";
-// import dayjs from "dayjs";
-// import "../../../../components/cards/card.css";
-// import { ManifestActions } from "./manifestActions";
-
 import React, { useCallback } from "react";
 import { Card, Typography, Space } from "antd";
 import { Link } from "react-router-dom";
@@ -18,9 +10,11 @@ interface ManifestCardProps {
   manifest: IListManifest;
   shiftId: string;
   type: "sender" | "recipient";
+  labelColor: string; // Новый пропс для цвета меток
   isSelected?: boolean;
   onSelect?: (id: string) => void;
 }
+
 const formatDate = (timestamp?: number) => {
   if (!timestamp) return "—";
   return dayjs(timestamp).format("DD.MM.YYYY");
@@ -47,13 +41,13 @@ const hasActiveButton = (status?: string, type?: string) => {
 };
 
 export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
-  ({ manifest, shiftId, type }) => {
+  ({ manifest, shiftId, type, labelColor }) => {
     const isActive = hasActiveButton(manifest.status, type);
 
     const renderCounterparty = useCallback(
       () => (
         <>
-          <Typography.Text strong style={{ color: "#2444b5" }}>
+          <Typography.Text strong style={{ color: labelColor }}>
             {type === "sender" ? "Получатель: " : "Отправитель: "}
           </Typography.Text>
           <Typography.Text>
@@ -63,29 +57,29 @@ export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
           </Typography.Text>
         </>
       ),
-      [type, manifest.recipient, manifest.sender]
+      [type, manifest.recipient, manifest.sender, labelColor]
     );
 
     const renderDetails = useCallback(
       () => (
         <>
-          <Typography.Text strong style={{ color: "#2444b5" }}>
+          <Typography.Text strong style={{ color: labelColor }}>
             Дата:{" "}
           </Typography.Text>
           <Typography.Text>{formatDate(manifest.date)}</Typography.Text>
-          <Typography.Text strong style={{ color: "#2444b5" }}>
+          <Typography.Text strong style={{ color: labelColor }}>
             {" "}
             Мест:{" "}
           </Typography.Text>
           <Typography.Text>{manifest.pieces_count || "—"}</Typography.Text>
-          <Typography.Text strong style={{ color: "#2444b5" }}>
+          <Typography.Text strong style={{ color: labelColor }}>
             {" "}
             Накладных:{" "}
           </Typography.Text>
           <Typography.Text>{manifest.parcels_count || "—"}</Typography.Text>
         </>
       ),
-      [manifest.date, manifest.pieces_count, manifest.parcels_count]
+      [manifest.date, manifest.pieces_count, manifest.parcels_count, labelColor]
     );
 
     return (
