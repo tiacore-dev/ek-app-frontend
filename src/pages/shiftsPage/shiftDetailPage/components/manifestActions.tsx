@@ -23,7 +23,7 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   const queryClient = useQueryClient();
 
   const canLoad = !status || status === "Готов к загрузке";
-  const canUnload = !status || status === "Манифест в пути";
+  const canUnload = status === "Манифест в пути";
 
   const mutation = useMutation({
     mutationFn: (data: { comment?: string }) =>
