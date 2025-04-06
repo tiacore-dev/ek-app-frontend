@@ -13,7 +13,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <Row justify="center" align="middle" style={{ height: "100vh" }}>
+    <Row justify="center" align="middle" style={{ overflow: "hidden" }}>
       <Col xs={24} sm={20} md={16} lg={12} xl={8}>
         <Form
           layout="vertical"
