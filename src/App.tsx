@@ -22,6 +22,7 @@ import { ConfigProvider } from "antd";
 import ru_RU from "antd/locale/ru_RU";
 import { store } from "./redux/store";
 import theme from "./theme/themeConfig";
+import "./App.css";
 
 dayjs.locale("ru");
 
