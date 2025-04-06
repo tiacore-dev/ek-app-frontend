@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
-import { Provider } from "react-redux"; // Импортируйте Provider
+import { Provider } from "react-redux";
 import ProtectedRoute from "./protectedRoute";
 import { LoginPage } from "./pages/loginPage/loginPage";
 import { HomePage } from "./pages/homePage/homePage";
@@ -19,12 +20,27 @@ import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import { ConfigProvider } from "antd";
 import ru_RU from "antd/locale/ru_RU";
-import { store } from "./redux/store"; // Импортируйте store
+import { store } from "./redux/store";
 import theme from "./theme/themeConfig";
 
 dayjs.locale("ru");
 
 const queryClient = new QueryClient();
+
+const ScrollController: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const isLoginPage = location.pathname === "/login";
+    document.body.classList.toggle("no-scroll", isLoginPage);
+
+    return () => {
+      document.body.classList.remove("no-scroll");
+    };
+  }, [location.pathname]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   return (
@@ -32,6 +48,7 @@ const App: React.FC = () => {
       <QueryClientProvider client={queryClient}>
         <ConfigProvider locale={ru_RU} theme={theme}>
           <Router>
+            <ScrollController /> {/* ← Управление скроллом */}
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route element={<ProtectedRoute />}>
