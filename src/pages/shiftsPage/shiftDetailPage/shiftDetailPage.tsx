@@ -56,7 +56,13 @@ export const ShiftDetailPage: React.FC = () => {
     return (
       <Card>
         <Typography.Text type="danger">Ошибка загрузки данных</Typography.Text>
-        <div style={{ marginTop: 16 }}>
+        <div
+          style={
+            {
+              // marginTop: 16
+            }
+          }
+        >
           <Button type="primary" onClick={() => navigate(-1)}>
             Назад
           </Button>
@@ -69,7 +75,15 @@ export const ShiftDetailPage: React.FC = () => {
       {data && (
         <ShiftDetails shift={data}>
           {data.manifests?.length ? (
-            <div style={{ margin: "0 -20px" }}>{manifestsTable}</div>
+            <div
+              style={
+                {
+                  //  margin: "0 -20px"
+                }
+              }
+            >
+              {manifestsTable}
+            </div>
           ) : null}
         </ShiftDetails>
       )}

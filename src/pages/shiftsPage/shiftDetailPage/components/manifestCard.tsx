@@ -139,7 +139,13 @@ export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
               <br />
               {renderDetails()}
             </div>
-            <Space style={{ marginTop: 8, marginLeft: 16 }}>
+            <Space
+              style={
+                {
+                  //  marginTop: 8, marginLeft: 16
+                }
+              }
+            >
               <div onClick={(e) => e.stopPropagation()}>
                 <ManifestActions
                   type={type}

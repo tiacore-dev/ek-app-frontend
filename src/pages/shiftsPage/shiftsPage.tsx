@@ -102,7 +102,13 @@ export const ShiftsPage: React.FC = () => {
     <div style={{ padding: "10px 20px 20px 20px" }}>
       {!isError && (
         <div>
-          <div style={{ marginBottom: 12 }}>
+          <div
+            style={
+              {
+                //  marginBottom: 12
+              }
+            }
+          >
             <ShiftsFilters
               onDateChange={handleDateChange}
               onResetDates={handleResetDateFilters}
@@ -131,7 +137,14 @@ export const ShiftsPage: React.FC = () => {
         </div>
       )}
       {isError && (
-        <Row justify="center" style={{ marginTop: "20%" }}>
+        <Row
+          justify="center"
+          style={
+            {
+              //  marginTop: "20%"
+            }
+          }
+        >
           <Col span={24}>
             <Typography.Text type="danger">{error.message}</Typography.Text>
           </Col>

@@ -24,7 +24,14 @@ export const AccountPage: React.FC = () => {
   const renderContent = useMemo(() => {
     if (isLoading) {
       return (
-        <Row justify="center" style={{ marginTop: 24 }}>
+        <Row
+          justify="center"
+          style={
+            {
+              // marginTop: 24
+            }
+          }
+        >
           <Spin size="large" />
         </Row>
       );
@@ -32,7 +39,14 @@ export const AccountPage: React.FC = () => {
 
     if (!user) {
       return (
-        <Row justify="center" style={{ marginTop: 24 }}>
+        <Row
+          justify="center"
+          style={
+            {
+              //  marginTop: 24
+            }
+          }
+        >
           <Typography.Text type="danger">
             Данные пользователя не найдены
           </Typography.Text>

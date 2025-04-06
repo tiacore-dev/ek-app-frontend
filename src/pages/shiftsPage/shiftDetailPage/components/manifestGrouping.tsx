@@ -9,7 +9,6 @@ interface GroupedManifest {
 export const groupManifestsByCity = (
   manifests: IListManifest[]
 ): GroupedManifest[] => {
-  // Используем Map для более эффективного хранения и доступа
   const cityMap = new Map<
     string,
     { asSender: IListManifest[]; asRecipient: IListManifest[] }

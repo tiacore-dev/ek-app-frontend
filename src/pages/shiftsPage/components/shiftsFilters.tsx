@@ -45,8 +45,20 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = React.memo(
       if (totalShifts === undefined) return null;
 
       return (
-        <div style={{ display: "flex", alignItems: "center", marginLeft: 16 }}>
-          <Typography.Text style={{ marginRight: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            // marginLeft: 16
+          }}
+        >
+          <Typography.Text
+            style={
+              {
+                // marginRight: 8
+              }
+            }
+          >
             Всего рейсов:
           </Typography.Text>
           <Typography.Text strong style={{ color: "#002091" }}>
@@ -57,35 +69,31 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = React.memo(
     }, [totalShifts]);
 
     return (
-      <ConfigProvider theme={configProviderTheme}>
-        <Space size="small" wrap>
-          <Space direction="vertical">
-            <DatePicker.RangePicker
-              onChange={onDateChange}
-              disabled={isLoading}
-              className="responsive-date-picker"
-              value={datePickerValue}
-              format="DD.MM.YYYY"
-              popupClassName={
-                isMobile
-                  ? "vertical-date-picker mobile"
-                  : "vertical-date-picker"
-              }
-              allowClear={false}
-              inputReadOnly={isMobile}
-            />
-          </Space>
-
-          <Button
-            onClick={onResetDates}
-            disabled={isLoading || (!dateFrom && !dateTo)}
-          >
-            Сбросить
-          </Button>
-
-          {totalShiftsComponent}
+      <Space size="small" wrap>
+        <Space direction="vertical">
+          <DatePicker.RangePicker
+            onChange={onDateChange}
+            disabled={isLoading}
+            className="responsive-date-picker"
+            value={datePickerValue}
+            format="DD.MM.YYYY"
+            popupClassName={
+              isMobile ? "vertical-date-picker mobile" : "vertical-date-picker"
+            }
+            allowClear={false}
+            inputReadOnly={isMobile}
+          />
         </Space>
-      </ConfigProvider>
+
+        <Button
+          onClick={onResetDates}
+          disabled={isLoading || (!dateFrom && !dateTo)}
+        >
+          Сбросить
+        </Button>
+
+        {totalShiftsComponent}
+      </Space>
     );
   }
 );

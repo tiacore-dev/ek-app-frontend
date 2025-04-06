@@ -86,7 +86,7 @@ export const useManifestsColumns = (
         ),
       },
       {
-        title: "Действия",
+        title: " ",
         key: "actions",
         width: 120,
         render: (_: any, record: IListManifest) => (
@@ -121,24 +121,24 @@ export const useManifestsColumns = (
       });
     }
     // По умолчанию вставляем обе колонки на вторую и третью позиции
-    else {
-      columns.splice(
-        1,
-        0,
-        {
-          title: "Отправитель",
-          dataIndex: "sender",
-          key: "sender",
-          width: 150,
-        },
-        {
-          title: "Получатель",
-          dataIndex: "recipient",
-          key: "recipient",
-          width: 150,
-        }
-      );
-    }
+    // else {
+    //   columns.splice(
+    //     1,
+    //     0,
+    //     {
+    //       title: "Отправитель",
+    //       dataIndex: "sender",
+    //       key: "sender",
+    //       width: 150,
+    //     },
+    //     {
+    //       title: "Получатель",
+    //       dataIndex: "recipient",
+    //       key: "recipient",
+    //       width: 150,
+    //     }
+    //   );
+    // }
 
     return columns;
   }, [shift_id, type]);

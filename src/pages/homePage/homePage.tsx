@@ -60,12 +60,25 @@ export const HomePage: React.FC = () => {
               }
             >
               {shiftData.manifests?.length ? (
-                <div style={{ margin: "0 -20px" }}>{manifestsTable}</div>
+                <div
+                  style={
+                    {
+                      // margin: "0 -20px"
+                    }
+                  }
+                >
+                  {manifestsTable}
+                </div>
               ) : null}
             </ShiftDetails>
           </>
         ) : (
-          <div style={{ textAlign: "center", marginTop: "20vh" }}>
+          <div
+            style={{
+              textAlign: "center",
+              //  marginTop: "20vh"
+            }}
+          >
             <Typography.Title level={3}>Нет активных рейсов</Typography.Title>
             <Typography.Paragraph>
               На данный момент нет доступных рейсов для отображения

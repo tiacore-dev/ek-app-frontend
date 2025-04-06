@@ -16,7 +16,11 @@ export const DesktopParcelsTable: React.FC<ParcelsComponentProps> = React.memo(
           rowKey={rowKey}
           pagination={false}
           size="small"
-          style={{ margin: "8px 16px" }}
+          style={
+            {
+              //  margin: "8px 16px"
+            }
+          }
         />
       </div>
     );

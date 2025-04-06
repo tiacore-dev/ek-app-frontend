@@ -43,7 +43,15 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
       (city: string, count: number) => (
         <Typography.Text strong>
           {city}
-          <Typography.Text style={{ marginLeft: 4 }}>({count})</Typography.Text>
+          <Typography.Text
+            style={
+              {
+                // marginLeft: 4
+              }
+            }
+          >
+            ({count})
+          </Typography.Text>
         </Typography.Text>
       ),
       []
@@ -55,11 +63,17 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
 
         const title = type === "sender" ? "Загрузить" : "Выгрузить";
         return (
-          <div style={{ marginBottom: type === "sender" ? 8 : 0 }}>
+          <div
+            style={
+              {
+                // marginBottom: type === "sender" ? 8 : 0
+              }
+            }
+          >
             <Divider
               orientation="left"
               style={{
-                margin: "4px 0",
+                // margin: "4px 0",
                 fontSize: 14,
                 lineHeight: 1.2,
               }}

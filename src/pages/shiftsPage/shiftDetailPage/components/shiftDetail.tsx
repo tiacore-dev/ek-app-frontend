@@ -52,15 +52,15 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
         <Divider
           orientation="left"
           style={{
-            marginTop: "-8px",
-            marginLeft: "-32px",
+            // marginTop: "-8px",
+            // marginLeft: "-32px",
             pointerEvents: "none",
           }}
         >
           {onDetailsTitleClick && (
             <CaretRightOutlined
               style={{
-                marginRight: 8,
+                // marginRight: 8,
                 transform: showFullDetails ? "rotate(90deg)" : "rotate(0deg)",
                 transition: "transform 0.2s",
                 color: "#2444b5",
@@ -120,9 +120,11 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
         <>
           <Divider
             orientation="right"
-            style={{
-              marginTop: "-12px",
-            }}
+            style={
+              {
+                // marginTop: "-12px",
+              }
+            }
           >
             {hasManifests ? "Манифесты" : "Манифесты (отсутствуют)"}
           </Divider>

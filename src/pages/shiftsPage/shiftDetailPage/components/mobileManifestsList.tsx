@@ -159,7 +159,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           borderRadius: 6,
           border: "1px solid #f0f0f0",
           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          margin: "0 0 8px 0",
+          // margin: "0 0 8px 0",
         }}
         bodyStyle={{
           padding: groupState.activeCity === group.city ? "8px 10px" : "0",
@@ -181,7 +181,7 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
           >
             <CaretRightOutlined
               style={{
-                marginRight: 4,
+                // marginRight: 4,
                 transform:
                   groupState.activeCity === group.city
                     ? "rotate(90deg)"
@@ -192,7 +192,13 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
             />
             <Typography.Text strong style={{ fontSize: "15px" }}>
               {group.city}
-              <Typography.Text style={{ marginLeft: 4 }}>
+              <Typography.Text
+                style={
+                  {
+                    //  marginLeft: 4
+                  }
+                }
+              >
                 ({group.asSender.length + group.asRecipient.length})
               </Typography.Text>
             </Typography.Text>
@@ -200,7 +206,13 @@ export const MobileManifestsList: React.FC<ManifestsComponentProps> = ({
         }
       >
         {groupState.activeCity === group.city && (
-          <div style={{ marginLeft: 2 }}>
+          <div
+            style={
+              {
+                // marginLeft: 2
+              }
+            }
+          >
             {group.asSender.length > 0 && renderSenderGroup(group)}
             {group.asRecipient.length > 0 && renderRecipientGroup(group)}
           </div>

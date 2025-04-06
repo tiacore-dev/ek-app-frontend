@@ -127,7 +127,15 @@ export const ManifestDetailPage: React.FC = () => {
             </Typography.Paragraph>
           </Card>
 
-          <div style={{ margin: "0 -20px" }}>{parcelsTable}</div>
+          <div
+            style={
+              {
+                // margin: "0 -20px"
+              }
+            }
+          >
+            {parcelsTable}
+          </div>
         </div>
       )}
       {isError && (
@@ -135,7 +143,13 @@ export const ManifestDetailPage: React.FC = () => {
           <Typography.Text type="danger">
             Ошибка загрузки данных
           </Typography.Text>
-          <div style={{ marginTop: 16 }}>
+          <div
+            style={
+              {
+                // marginTop: 16
+              }
+            }
+          >
             <Button type="primary" onClick={handleGoBack}>
               Назад
             </Button>
