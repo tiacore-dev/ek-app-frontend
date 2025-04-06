@@ -11,13 +11,6 @@ import { MobileParcelsList } from "./components/mobileParcelsList";
 import { DesktopParcelsTable } from "./components/desktopParcelsTable";
 
 interface ManifestDetail {
-  // id: string;
-  // number: string;
-  // sender?: string;
-  // pieces_count?: number;
-  // parcels_count?: number;
-  // weight?: number;
-  // volume?: number;
   auto: string;
   id: string;
   sender?: string;

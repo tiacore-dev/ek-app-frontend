@@ -49,7 +49,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = React.memo(
           style={{
             display: "flex",
             alignItems: "center",
-            // marginLeft: 16
+            marginLeft: 16,
           }}
         >
           <Typography.Text
@@ -88,6 +88,7 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = React.memo(
         <Button
           onClick={onResetDates}
           disabled={isLoading || (!dateFrom && !dateTo)}
+          style={{ marginBottom: "8px" }}
         >
           Сбросить
         </Button>

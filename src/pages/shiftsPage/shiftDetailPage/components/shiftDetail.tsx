@@ -28,7 +28,7 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
   showManifests = true,
   children,
   showFullDetails = true,
-  detailsTitle = "Детали",
+  detailsTitle = "",
   onDetailsTitleClick,
 }) => {
   const isFullShift = "payment" in shift;
@@ -52,8 +52,8 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
         <Divider
           orientation="left"
           style={{
-            // marginTop: "-8px",
-            // marginLeft: "-32px",
+            marginTop: "-8px",
+            marginLeft: "-24px",
             pointerEvents: "none",
           }}
         >

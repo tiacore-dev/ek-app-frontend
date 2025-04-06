@@ -12,7 +12,7 @@ export const Breadcrumbs: React.FC = () => {
   return (
     <Breadcrumb
       style={{
-        // margin: "1%",
+        margin: "1%",
         marginBottom: "0",
       }}
     >
