@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useUserQuery } from "../../hooks/useUserQuery";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";
@@ -11,7 +11,9 @@ export const TestPage: React.FC = () => {
   const dispatch = useDispatch();
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null);
+  const [isZebraScannerActive, setIsZebraScannerActive] = useState(false);
   const isMobile = useMobileDetection();
+  const scannedDataRef = useRef("");
 
   const breadcrumbs = useMemo(
     () => [
@@ -24,7 +26,33 @@ export const TestPage: React.FC = () => {
   useEffect(() => {
     dispatch(setBreadcrumbs(breadcrumbs));
   }, [dispatch, breadcrumbs]);
-  const startScan = () => {
+
+  // Обработчик для Zebra сканера (Keystroke output)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Игнорируем ввод, если Zebra сканер не активирован
+      if (!isZebraScannerActive) return;
+
+      // Обрабатываем только обычные символы и Enter
+      if (e.key === "Enter") {
+        // Сохраняем результат сканирования
+        if (scannedDataRef.current) {
+          setScanResult(scannedDataRef.current);
+          scannedDataRef.current = "";
+        }
+      } else if (e.key.length === 1) {
+        // Накапливаем символы
+        scannedDataRef.current += e.key;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isZebraScannerActive]);
+
+  const startCameraScan = () => {
     if (scanner) {
       scanner.clear().catch((error) => {
         console.error("Ошибка при остановке сканера", error);
@@ -32,6 +60,7 @@ export const TestPage: React.FC = () => {
     }
 
     setScanResult(null);
+    setIsZebraScannerActive(false);
 
     const qrboxSize = isMobile
       ? { width: 200, height: 200 }
@@ -93,6 +122,20 @@ export const TestPage: React.FC = () => {
     setScanner(newScanner);
   };
 
+  const startZebraScan = () => {
+    // Останавливаем камерный сканер если активен
+    if (scanner) {
+      scanner.clear().catch((error) => {
+        console.error("Ошибка при остановке сканера", error);
+      });
+      setScanner(null);
+    }
+
+    setScanResult(null);
+    scannedDataRef.current = "";
+    setIsZebraScannerActive(true);
+  };
+
   const stopScan = () => {
     if (scanner) {
       scanner.clear().catch((error) => {
@@ -100,6 +143,7 @@ export const TestPage: React.FC = () => {
       });
       setScanner(null);
     }
+    setIsZebraScannerActive(false);
   };
 
   return (
@@ -116,17 +160,44 @@ export const TestPage: React.FC = () => {
           gap: "10px",
         }}
       >
-        <Button onClick={startScan}>Начать сканирование</Button>
+        <Button onClick={startCameraScan}>Сканирование камерой</Button>
+        <Button
+          onClick={startZebraScan}
+          type={isZebraScannerActive ? "primary" : "default"}
+        >
+          Использовать Zebra сканер
+        </Button>
+        <Button onClick={stopScan} danger>
+          Остановить сканирование
+        </Button>
       </div>
 
-      <div
-        id="qr-reader"
-        style={{
-          width: isMobile ? "100%" : "500px",
-          margin: "20px 0",
-          maxWidth: "100%",
-        }}
-      ></div>
+      {!isZebraScannerActive && (
+        <div
+          id="qr-reader"
+          style={{
+            width: isMobile ? "100%" : "500px",
+            margin: "20px 0",
+            maxWidth: "100%",
+          }}
+        ></div>
+      )}
+
+      {isZebraScannerActive && (
+        <div
+          style={{
+            margin: "20px 0",
+            padding: "15px",
+            backgroundColor: "#f0f7ff",
+            borderRadius: "4px",
+          }}
+        >
+          <h3 style={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}>
+            Режим Zebra сканера активен
+          </h3>
+          <p>Нажмите кнопку сканера на устройстве для сканирования QR-кода</p>
+        </div>
+      )}
 
       {scanResult && (
         <div
