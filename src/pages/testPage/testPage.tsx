@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { Button } from "antd";
+import { Button, notification } from "antd";
+import { NotificationInstance } from "antd/es/notification/interface";
 
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch();
-  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [api, contextHolder] = notification.useNotification();
   const [isScanning, setIsScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,23 +34,52 @@ export const TestPage: React.FC = () => {
     };
   }, []);
 
+  const showScanResult = (result: string) => {
+    api.success({
+      message: "QR-код успешно отсканирован",
+      description: (
+        <div style={{ marginTop: 16 }}>
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              backgroundColor: "#f6f6f6",
+              padding: 12,
+              borderRadius: 4,
+              margin: 0,
+            }}
+          >
+            {result}
+          </pre>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => navigator.clipboard.writeText(result)}
+            style={{ marginTop: 8 }}
+          >
+            Копировать
+          </Button>
+        </div>
+      ),
+      duration: 8,
+      placement: "topRight",
+    });
+  };
+
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
-
-    // Получаем все введенные символы (а не только последний)
     const newData = input.value;
 
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
     }
 
-    // Обновляем накопленные данные
     accumulatedDataRef.current = newData;
     setIsScanning(true);
 
     scanTimeoutRef.current = setTimeout(() => {
       if (accumulatedDataRef.current) {
-        setScanResult(accumulatedDataRef.current);
+        showScanResult(accumulatedDataRef.current);
         setIsScanning(false);
         accumulatedDataRef.current = "";
         if (inputRef.current) {
@@ -60,7 +90,6 @@ export const TestPage: React.FC = () => {
   };
 
   const clearResult = () => {
-    setScanResult(null);
     setIsScanning(false);
     accumulatedDataRef.current = "";
     if (scanTimeoutRef.current) {
@@ -86,6 +115,8 @@ export const TestPage: React.FC = () => {
         minHeight: "60vh",
       }}
     >
+      {contextHolder}
+
       <h1 style={{ fontSize: "1.8rem", marginBottom: "30px" }}>
         Сканер QR-кодов (Zebra)
       </h1>
@@ -118,39 +149,20 @@ export const TestPage: React.FC = () => {
           )}
         </p>
         <Button onClick={clearResult} size="large">
-          Очистить результат
+          Сбросить сканер
         </Button>
       </div>
 
-      {scanResult && (
-        <div
-          style={{
-            margin: "20px 0",
-            padding: "20px",
-            backgroundColor: "#f0f0f0",
-            borderRadius: "8px",
-            width: "90%",
-            maxWidth: "600px",
-            wordBreak: "break-word",
-          }}
-        >
-          <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
-            Результат сканирования:
-          </h3>
-          <pre
-            style={{
-              fontSize: "16px",
-              whiteSpace: "pre-wrap",
-              fontFamily: "monospace",
-              backgroundColor: "white",
-              padding: "10px",
-              borderRadius: "4px",
-            }}
-          >
-            {scanResult}
-          </pre>
-        </div>
-      )}
+      {/* Индикатор состояния для мобильных устройств */}
+      <div
+        style={{
+          visibility: "hidden",
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        {isScanning ? "Сканирование..." : "Готов к сканированию"}
+      </div>
     </div>
   );
 };
