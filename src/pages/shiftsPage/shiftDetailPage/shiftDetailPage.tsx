@@ -73,18 +73,8 @@ export const ShiftDetailPage: React.FC = () => {
   return (
     <>
       {data && (
-        <ShiftDetails shift={data}>
-          {data.manifests?.length ? (
-            <div
-              style={
-                {
-                  //  margin: "0 -20px"
-                }
-              }
-            >
-              {manifestsTable}
-            </div>
-          ) : null}
+        <ShiftDetails shift={data} shiftId={shift_id!}>
+          {data.manifests?.length ? <>{manifestsTable}</> : null}
         </ShiftDetails>
       )}
     </>

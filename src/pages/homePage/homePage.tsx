@@ -58,18 +58,9 @@ export const HomePage: React.FC = () => {
               onDetailsTitleClick={() =>
                 setAreDetailsCollapsed(!areDetailsCollapsed)
               }
+              shiftId={lastShiftId || ""}
             >
-              {shiftData.manifests?.length ? (
-                <div
-                  style={
-                    {
-                      // margin: "0 -20px"
-                    }
-                  }
-                >
-                  {manifestsTable}
-                </div>
-              ) : null}
+              {shiftData.manifests?.length ? <div>{manifestsTable}</div> : null}
             </ShiftDetails>
           </>
         ) : (

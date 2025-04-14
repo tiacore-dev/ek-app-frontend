@@ -1,5 +1,22 @@
 import { Dayjs } from "dayjs";
 
+export interface IShiftResponse {
+  auto: string;
+  auto_id: string;
+  date: number;
+  card: string;
+  date_start: number;
+  date_finish: number;
+  city_start: string;
+  city_finish: string;
+  name: string;
+  comment: string;
+  payment: number;
+  extra_payments: IExtraPayment[];
+  manifests: IListManifest[];
+  get_auto?: IShiftAuto;
+  return_auto?: IShiftAuto;
+}
 export interface IListParcels {
   id: string;
   customer: string;
@@ -49,7 +66,8 @@ export interface IListManifest {
 }
 
 export interface IListShiftResponse {
-  id: string;
+  shift_id: string;
+  auto_id: string;
   auto: string;
   card: string;
   date_start: number;
@@ -59,6 +77,8 @@ export interface IListShiftResponse {
   name: string;
   comment: string;
   date: number;
+  get_auto?: IShiftAuto;
+  return_auto?: IShiftAuto;
 }
 
 export interface IShiftResponse extends IListShiftResponse {
@@ -121,20 +141,8 @@ export interface IShiftBase {
   comment: string;
 }
 
-export interface IShiftResponse {
-  auto: string;
-  auto_id: string;
-  date: number;
-  card: string;
-  date_start: number;
-  date_finish: number;
-  city_start: string;
-  city_finish: string;
-  name: string;
-  comment: string;
-  payment: number;
-  extra_payments: IExtraPayment[];
-  manifests: IListManifest[];
+export interface IGetAutoStatusResponse extends IShiftAuto {
+  auto_status: "in_use" | "available" | "not_available";
 }
 
 export interface IListShiftResponse extends IShiftBase {

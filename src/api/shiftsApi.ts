@@ -6,6 +6,7 @@ import {
   IPaginateResponse,
   IManifestResponse,
   IManifestLoadingRequest,
+  IGetAutoStatusResponse,
   // IManifestLoadingResponse,
 } from "../types/shifts";
 
@@ -91,4 +92,40 @@ export const postManifestUploading = async (
   console.log("[Server Response Data]", response.data);
 
   return response.data;
+};
+
+export const fetchAutoStatus = async (
+  autoId: string
+): Promise<IGetAutoStatusResponse> => {
+  const url = process.env.REACT_APP_API_URL;
+
+  const response = await axiosInstance.get(`${url}/auto-status/${autoId}/get`, {
+    headers: getAuthHeaders(),
+  });
+  console.log("[Server Response Data - Auto Status]", response.data);
+  return response.data;
+};
+
+export const postShiftEnd = async (shiftId: string): Promise<void> => {
+  const url = process.env.REACT_APP_API_URL;
+  const response = await axiosInstance.post(
+    `${url}/shift-end/${shiftId}/post`,
+    {}, // Пустое тело запроса
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+  console.log("[Server Response Data - Shift End]", response.data);
+};
+
+export const postShiftStart = async (shiftId: string): Promise<void> => {
+  const url = process.env.REACT_APP_API_URL;
+  const response = await axiosInstance.post(
+    `${url}/shift-start/${shiftId}/post`,
+    {}, // Пустое тело запроса
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+  console.log("[Server Response Data - Shift Start]", response.data);
 };
