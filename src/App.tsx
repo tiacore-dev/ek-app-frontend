@@ -22,26 +22,12 @@ import { ConfigProvider } from "antd";
 import ru_RU from "antd/locale/ru_RU";
 import { store } from "./redux/store";
 import theme from "./theme/themeConfig";
+import { TestPage } from "./pages/testPage/testPage";
 import "./App.css";
 
 dayjs.locale("ru");
 
 const queryClient = new QueryClient();
-
-const ScrollController: React.FC = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    const isLoginPage = location.pathname === "/login";
-    document.body.classList.toggle("no-scroll", isLoginPage);
-
-    return () => {
-      document.body.classList.remove("no-scroll");
-    };
-  }, [location.pathname]);
-
-  return null;
-};
 
 const App: React.FC = () => {
   return (
@@ -49,12 +35,13 @@ const App: React.FC = () => {
       <QueryClientProvider client={queryClient}>
         <ConfigProvider locale={ru_RU} theme={theme}>
           <Router>
-            <ScrollController /> {/* ← Управление скроллом */}
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/test" element={<TestPage />} />
+
                 <Route path="/shifts" element={<ShiftsPage />} />
                 <Route path="/shifts/:shift_id" element={<ShiftDetailPage />} />
                 <Route

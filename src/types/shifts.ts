@@ -85,6 +85,14 @@ export interface IListManifest {
   weight: number;
   volume: number;
   status?: string;
+  get_auto: IShiftAuto;
+  return_auto: IShiftAuto;
+}
+
+interface IShiftAuto {
+  auto_odo: number;
+  auto_fuel: [];
+  auto_status_date: number; // timestamp
 }
 
 export interface ManifestsComponentProps {
@@ -115,6 +123,7 @@ export interface IShiftBase {
 
 export interface IShiftResponse {
   auto: string;
+  auto_id: string;
   date: number;
   card: string;
   date_start: number;

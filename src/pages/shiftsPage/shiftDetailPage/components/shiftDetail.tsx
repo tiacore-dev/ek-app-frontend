@@ -82,18 +82,22 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
           <Typography.Paragraph>
             <strong>Маршрут:</strong> {shift.name || "—"}
           </Typography.Paragraph>
-          <Typography.Paragraph>
-            <strong>Карта:</strong> {shift.card || "—"}
-          </Typography.Paragraph>
-
+          {shift.card && (
+            <Typography.Paragraph>
+              <strong>Карта:</strong> {shift.card || "—"}
+            </Typography.Paragraph>
+          )}
           {isFullShift && (
             <>
               <Typography.Paragraph>
                 <strong>Основная оплата:</strong> {shift.payment || "—"} руб.
               </Typography.Paragraph>
-              <Typography.Paragraph>
-                <strong>Комментарий:</strong> {shift.comment || "—"}
-              </Typography.Paragraph>
+
+              {shift.comment && (
+                <Typography.Paragraph>
+                  <strong>Комментарий:</strong> {shift.comment}
+                </Typography.Paragraph>
+              )}
 
               {hasExtraPayments && (
                 <>
