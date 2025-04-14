@@ -95,31 +95,31 @@ export const TestPage: React.FC = () => {
         Очистить результат
       </Button>
 
-      {scanResult && (
+      {/* {scanResult && ( */}
+      <div
+        style={{
+          padding: "16px",
+          backgroundColor: "#f0f0f0",
+          borderRadius: "8px",
+          marginTop: "16px",
+        }}
+      >
+        <h3 style={{ marginBottom: "8px" }}>Результат сканирования:</h3>
         <div
           style={{
-            padding: "16px",
-            backgroundColor: "#f0f0f0",
-            borderRadius: "8px",
-            marginTop: "16px",
+            backgroundColor: "white",
+            padding: "12px",
+            borderRadius: "4px",
+            fontFamily: "monospace",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            overflowX: "auto",
           }}
         >
-          <h3 style={{ marginBottom: "8px" }}>Результат сканирования:</h3>
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "12px",
-              borderRadius: "4px",
-              fontFamily: "monospace",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              overflowX: "auto",
-            }}
-          >
-            {scanResult}
-          </div>
+          {scanResult}
         </div>
-      )}
+      </div>
+      {/* )} */}
     </div>
   );
 };
