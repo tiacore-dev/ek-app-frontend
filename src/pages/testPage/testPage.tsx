@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { Button, Alert } from "antd";
+import { Button } from "antd";
 
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch();
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const scannedDataRef = useRef("");
-  const scanTimeoutRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const scanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCharTimeRef = useRef<number>(0);
 
   useEffect(() => {
     dispatch(
@@ -19,107 +20,140 @@ export const TestPage: React.FC = () => {
     );
   }, [dispatch]);
 
-  // Обработчик для Zebra сканера без Enter
+  // Фокус на поле ввода при загрузке
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Игнорируем управляющие клавиши
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
 
-      // Сбрасываем таймер при новом вводе
+    return () => {
+      // Очистка таймера при размонтировании компонента
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
       }
+    };
+  }, []);
 
-      // Если это печатный символ
-      if (e.key.length === 1) {
-        if (!isScanning) setIsScanning(true);
-        scannedDataRef.current += e.key;
-      }
+  // Обработчик ввода данных
+  const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value;
 
-      // Запускаем таймер для определения конца ввода
-      scanTimeoutRef.current = window.setTimeout(() => {
-        if (scannedDataRef.current) {
-          setScanResult(scannedDataRef.current);
-          scannedDataRef.current = "";
-          setIsScanning(false);
+    // Если есть предыдущий таймаут - очищаем его
+    if (scanTimeoutRef.current) {
+      clearTimeout(scanTimeoutRef.current);
+    }
+
+    // Если ввод начался, но флаг еще не установлен
+    if (value && !isScanning) {
+      setIsScanning(true);
+    }
+
+    // Запоминаем время последнего ввода
+    lastCharTimeRef.current = Date.now();
+
+    // Устанавливаем таймаут для завершения сканирования
+    scanTimeoutRef.current = setTimeout(() => {
+      if (isScanning && value) {
+        setScanResult(value);
+        setIsScanning(false);
+        if (inputRef.current) {
+          inputRef.current.value = "";
         }
-      }, 200); // Таймаут 200мс между символами
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
-    };
-  }, [isScanning]);
+      }
+    }, 300); // Таймаут 300мс после последнего ввода
+  };
 
   const clearResult = () => {
     setScanResult(null);
-    scannedDataRef.current = "";
-    setIsScanning(false);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
       scanTimeoutRef.current = null;
     }
+    setIsScanning(false);
   };
 
   return (
     <div
       style={{
         padding: "16px",
-        maxWidth: "800px",
-        margin: "0 auto",
-        minHeight: "60vh",
+        maxWidth: "100%",
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
         justifyContent: "center",
+        minHeight: "60vh",
       }}
     >
-      <h1 style={{ textAlign: "center", marginBottom: "24px" }}>
+      <h1 style={{ fontSize: "1.8rem", marginBottom: "30px" }}>
         Сканер QR-кодов (Zebra)
       </h1>
 
-      <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        {isScanning ? (
-          <Alert message="Сканирование..." type="info" showIcon />
-        ) : (
-          <Alert message="Готов к сканированию" type="success" showIcon />
-        )}
-      </div>
+      {/* Скрытое поле ввода */}
+      <input
+        ref={inputRef}
+        type="text"
+        onInput={handleInput}
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          opacity: 0,
+        }}
+      />
 
-      <Button
-        onClick={clearResult}
-        size="large"
-        style={{ margin: "0 auto 24px", display: "block" }}
-      >
-        Очистить результат
-      </Button>
-
-      {/* {scanResult && ( */}
       <div
         style={{
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "8px",
-          marginTop: "16px",
+          margin: "20px 0",
+          textAlign: "center",
         }}
       >
-        <h3 style={{ marginBottom: "8px" }}>Результат сканирования:</h3>
+        <p style={{ fontSize: "1.1rem", marginBottom: "20px" }}>
+          Наведите сканер на QR-код
+          {isScanning && (
+            <span style={{ color: "green", marginLeft: "10px" }}>
+              Сканирование...
+            </span>
+          )}
+        </p>
+        <Button onClick={clearResult} size="large">
+          Очистить результат
+        </Button>
+      </div>
+
+      {scanResult && (
         <div
           style={{
-            backgroundColor: "white",
-            padding: "12px",
-            borderRadius: "4px",
-            fontFamily: "monospace",
-            whiteSpace: "pre-wrap",
+            margin: "20px 0",
+            padding: "20px",
+            backgroundColor: "#f0f0f0",
+            borderRadius: "8px",
+            width: "90%",
+            maxWidth: "600px",
             wordBreak: "break-word",
-            overflowX: "auto",
           }}
         >
-          {scanResult}
+          <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
+            Результат сканирования:
+          </h3>
+          <pre
+            style={{
+              fontSize: "16px",
+              whiteSpace: "pre-wrap",
+              fontFamily: "monospace",
+              backgroundColor: "white",
+              padding: "10px",
+              borderRadius: "4px",
+            }}
+          >
+            {scanResult}
+          </pre>
         </div>
-      </div>
-      {/* )} */}
+      )}
     </div>
   );
 };
