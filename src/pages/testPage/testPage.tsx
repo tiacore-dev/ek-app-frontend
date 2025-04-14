@@ -38,8 +38,7 @@ export const TestPage: React.FC = () => {
     api.success({
       message: (
         <div>
-          <span>Результат сканирования: </span>
-          <span style={{ fontWeight: "bold" }}>{result}</span>
+          <span>{result}</span>
         </div>
       ),
       description: (
