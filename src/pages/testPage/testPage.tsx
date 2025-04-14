@@ -36,30 +36,24 @@ export const TestPage: React.FC = () => {
 
   const showScanResult = (result: string) => {
     api.success({
-      message: "QR-код успешно отсканирован",
-      description: (
-        <div style={{ marginTop: 16 }}>
-          <pre
-            style={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              backgroundColor: "#f6f6f6",
-              padding: 12,
-              borderRadius: 4,
-              margin: 0,
-            }}
-          >
-            {result}
-          </pre>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => navigator.clipboard.writeText(result)}
-            style={{ marginTop: 8 }}
-          >
-            Копировать
-          </Button>
+      message: (
+        <div>
+          <span>Результат сканирования: </span>
+          <span style={{ fontWeight: "bold" }}>{result}</span>
         </div>
+      ),
+      description: (
+        <Button
+          type="link"
+          size="small"
+          onClick={() => {
+            navigator.clipboard.writeText(result);
+            api.info({ message: "Текст скопирован в буфер обмена" });
+          }}
+          style={{ padding: 0 }}
+        >
+          Копировать
+        </Button>
       ),
       duration: 8,
       placement: "topRight",
