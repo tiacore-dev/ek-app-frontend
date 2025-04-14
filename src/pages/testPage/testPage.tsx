@@ -9,7 +9,7 @@ export const TestPage: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastCharTimeRef = useRef<number>(0);
+  const accumulatedDataRef = useRef<string>("");
 
   useEffect(() => {
     dispatch(
@@ -20,59 +20,58 @@ export const TestPage: React.FC = () => {
     );
   }, [dispatch]);
 
-  // Фокус на поле ввода при загрузке
+  // Фокус на поле ввода при загрузке и очистка при размонтировании
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+    const input = inputRef.current;
+    if (input) {
+      input.focus();
     }
 
     return () => {
-      // Очистка таймера при размонтировании компонента
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
       }
     };
   }, []);
 
-  // Обработчик ввода данных
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
+    const input = e.currentTarget;
+    const newChar = input.value.slice(-1); // Получаем последний введенный символ
 
-    // Если есть предыдущий таймаут - очищаем его
+    // Очищаем предыдущий таймаут
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
     }
 
-    // Если ввод начался, но флаг еще не установлен
-    if (value && !isScanning) {
-      setIsScanning(true);
-    }
+    // Добавляем новый символ к накопленным данным
+    accumulatedDataRef.current += newChar;
+    setIsScanning(true);
 
-    // Запоминаем время последнего ввода
-    lastCharTimeRef.current = Date.now();
-
-    // Устанавливаем таймаут для завершения сканирования
+    // Устанавливаем новый таймаут
     scanTimeoutRef.current = setTimeout(() => {
-      if (isScanning && value) {
-        setScanResult(value);
+      if (accumulatedDataRef.current) {
+        setScanResult(accumulatedDataRef.current);
         setIsScanning(false);
-        if (inputRef.current) {
-          inputRef.current.value = "";
-        }
+        accumulatedDataRef.current = "";
       }
-    }, 300); // Таймаут 300мс после последнего ввода
+    }, 300);
+
+    // Сбрасываем значение input, чтобы принимать новые символы
+    input.value = "";
   };
 
   const clearResult = () => {
     setScanResult(null);
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
+    setIsScanning(false);
+    accumulatedDataRef.current = "";
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
       scanTimeoutRef.current = null;
     }
-    setIsScanning(false);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+      inputRef.current.focus();
+    }
   };
 
   return (
@@ -125,35 +124,35 @@ export const TestPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* {scanResult && ( */}
-      <div
-        style={{
-          margin: "20px 0",
-          padding: "20px",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "8px",
-          width: "90%",
-          maxWidth: "600px",
-          wordBreak: "break-word",
-        }}
-      >
-        <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
-          Результат сканирования:
-        </h3>
-        <pre
+      {scanResult && (
+        <div
           style={{
-            fontSize: "16px",
-            whiteSpace: "pre-wrap",
-            fontFamily: "monospace",
-            backgroundColor: "white",
-            padding: "10px",
-            borderRadius: "4px",
+            margin: "20px 0",
+            padding: "20px",
+            backgroundColor: "#f0f0f0",
+            borderRadius: "8px",
+            width: "90%",
+            maxWidth: "600px",
+            wordBreak: "break-word",
           }}
         >
-          {scanResult}
-        </pre>
-      </div>
-      {/* )} */}
+          <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
+            Результат сканирования:
+          </h3>
+          <pre
+            style={{
+              fontSize: "16px",
+              whiteSpace: "pre-wrap",
+              fontFamily: "monospace",
+              backgroundColor: "white",
+              padding: "10px",
+              borderRadius: "4px",
+            }}
+          >
+            {scanResult}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
