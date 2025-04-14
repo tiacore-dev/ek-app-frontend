@@ -125,35 +125,35 @@ export const TestPage: React.FC = () => {
         </Button>
       </div>
 
-      {scanResult && (
-        <div
+      {/* {scanResult && ( */}
+      <div
+        style={{
+          margin: "20px 0",
+          padding: "20px",
+          backgroundColor: "#f0f0f0",
+          borderRadius: "8px",
+          width: "90%",
+          maxWidth: "600px",
+          wordBreak: "break-word",
+        }}
+      >
+        <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
+          Результат сканирования:
+        </h3>
+        <pre
           style={{
-            margin: "20px 0",
-            padding: "20px",
-            backgroundColor: "#f0f0f0",
-            borderRadius: "8px",
-            width: "90%",
-            maxWidth: "600px",
-            wordBreak: "break-word",
+            fontSize: "16px",
+            whiteSpace: "pre-wrap",
+            fontFamily: "monospace",
+            backgroundColor: "white",
+            padding: "10px",
+            borderRadius: "4px",
           }}
         >
-          <h3 style={{ fontSize: "1.3rem", marginBottom: "10px" }}>
-            Результат сканирования:
-          </h3>
-          <pre
-            style={{
-              fontSize: "16px",
-              whiteSpace: "pre-wrap",
-              fontFamily: "monospace",
-              backgroundColor: "white",
-              padding: "10px",
-              borderRadius: "4px",
-            }}
-          >
-            {scanResult}
-          </pre>
-        </div>
-      )}
+          {scanResult}
+        </pre>
+      </div>
+      {/* )} */}
     </div>
   );
 };
