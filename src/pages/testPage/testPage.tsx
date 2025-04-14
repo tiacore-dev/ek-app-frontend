@@ -20,7 +20,6 @@ export const TestPage: React.FC = () => {
     );
   }, [dispatch]);
 
-  // Фокус на поле ввода при загрузке и очистка при размонтировании
   useEffect(() => {
     const input = inputRef.current;
     if (input) {
@@ -36,28 +35,28 @@ export const TestPage: React.FC = () => {
 
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
-    const newChar = input.value.slice(-1); // Получаем последний введенный символ
 
-    // Очищаем предыдущий таймаут
+    // Получаем все введенные символы (а не только последний)
+    const newData = input.value;
+
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
     }
 
-    // Добавляем новый символ к накопленным данным
-    accumulatedDataRef.current += newChar;
+    // Обновляем накопленные данные
+    accumulatedDataRef.current = newData;
     setIsScanning(true);
 
-    // Устанавливаем новый таймаут
     scanTimeoutRef.current = setTimeout(() => {
       if (accumulatedDataRef.current) {
         setScanResult(accumulatedDataRef.current);
         setIsScanning(false);
         accumulatedDataRef.current = "";
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
       }
     }, 300);
-
-    // Сбрасываем значение input, чтобы принимать новые символы
-    input.value = "";
   };
 
   const clearResult = () => {
@@ -91,7 +90,6 @@ export const TestPage: React.FC = () => {
         Сканер QR-кодов (Zebra)
       </h1>
 
-      {/* Скрытое поле ввода */}
       <input
         ref={inputRef}
         type="text"
