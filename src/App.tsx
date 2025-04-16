@@ -15,6 +15,8 @@ import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
 import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage/shiftDetailPage";
 import { ManifestDetailPage } from "./pages/shiftsPage/manifests/manifestDetailsPage";
+import { WarehouseReceivePage } from "./pages/warehousePage/receivePage/receivePage"; // Импорт новой страницы
+import { WarehouseShipPage } from "./pages/warehousePage/shipPage/shipPage"; // Импорт новой страницы
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -48,6 +50,12 @@ const App: React.FC = () => {
                   path="/shifts/:shift_id/:manifest_id"
                   element={<ManifestDetailPage />}
                 />
+
+                <Route
+                  path="/warehouse/receive"
+                  element={<WarehouseReceivePage />}
+                />
+                <Route path="/warehouse/ship" element={<WarehouseShipPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
