@@ -15,8 +15,8 @@ import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
 import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage/shiftDetailPage";
 import { ManifestDetailPage } from "./pages/shiftsPage/manifests/manifestDetailsPage";
-import { WarehouseReceivePage } from "./pages/warehousePage/receivePage/receivePage"; // Импорт новой страницы
-import { WarehouseShipPage } from "./pages/warehousePage/shipPage/shipPage"; // Импорт новой страницы
+import { WarehouseReceivePage } from "./pages/warehousePage/receivePage/receivePage"; //
+import { WarehouseShipPage } from "./pages/warehousePage/shipPage/shipPage"; //
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
