@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
-import { Switch, Input, Button, message, Space, Card } from "antd";
+import { Switch, Input, Button, Space, Card } from "antd";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
 
@@ -24,14 +24,13 @@ export const WarehouseReceivePage: React.FC = () => {
       ])
     );
 
-    // if (isMobile) {
-    //   setInputMode(false);
-    // }
+    if (isMobile) {
+      setInputMode(true);
+    }
 
     return () => {
       if (scannerRef.current) {
         scannerRef.current.clear();
-        scannerRef.current = null;
       }
     };
   }, [dispatch, isMobile]);
@@ -48,83 +47,38 @@ export const WarehouseReceivePage: React.FC = () => {
   }, [inputMode, isMobile]);
 
   const getScannerConfig = () => {
-    const config = {
+    return {
       fps: 10,
       qrbox: isMobile
         ? { width: 200, height: 200 }
         : { width: 250, height: 250 },
-      rememberLastUsedCamera: false,
+      supportedScanTypes: [],
     };
-
-    // Добавляем настройки камеры только для мобильных устройств
-    if (isMobile) {
-      return {
-        ...config,
-        videoConstraints: {
-          facingMode: { exact: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      };
-    }
-    return config;
   };
 
   const initQRScanner = () => {
     if (scannerRef.current) return;
 
-    const config = getScannerConfig();
-    const scanner = new Html5QrcodeScanner(qrContainerId, config, false);
+    const scanner = new Html5QrcodeScanner(
+      qrContainerId,
+      getScannerConfig(),
+      false
+    );
 
-    try {
-      scanner.render(
-        (decodedText) => handleScanResult(decodedText),
-        (errorMessage) => {
-          console.log(errorMessage);
-          // Если произошла ошибка при сканировании, пробуем перезапустить с базовыми настройками
-          if (isMobile) {
-            scanner.clear();
-            const fallbackScanner = new Html5QrcodeScanner(
-              qrContainerId,
-              {
-                fps: 10,
-                qrbox: { width: 200, height: 200 },
-              },
-              false
-            );
-            fallbackScanner.render(
-              (decodedText) => handleScanResult(decodedText),
-              (errorMessage) => console.log(errorMessage)
-            );
-            scannerRef.current = fallbackScanner;
-          }
-        }
-      );
-    } catch (err) {
-      console.warn("Не удалось инициализировать сканер:", err);
-      // Пробуем снова с базовыми настройками
-      const fallbackScanner = new Html5QrcodeScanner(
-        qrContainerId,
-        {
-          fps: 10,
-          qrbox: isMobile
-            ? { width: 200, height: 200 }
-            : { width: 250, height: 250 },
-        },
-        false
-      );
-      fallbackScanner.render(
-        (decodedText) => handleScanResult(decodedText),
-        (errorMessage) => console.log(errorMessage)
-      );
-      scannerRef.current = fallbackScanner;
-    }
+    scanner.render(
+      (decodedText) => {
+        handleScanResult(decodedText);
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
+      }
+    );
 
     scannerRef.current = scanner;
   };
 
   const handleScanResult = (decodedText: string) => {
-    const zoneRegex = /^[0]{4}-[0]{4}-([0-9]{3})$/;
+    const zoneRegex = /^[0-9]{4}-[0-9]{4}-([0-9]{3})$/;
     const isZone = zoneRegex.test(decodedText);
 
     if (isZone) {
@@ -132,14 +86,12 @@ export const WarehouseReceivePage: React.FC = () => {
       if (zoneMatch && zoneMatch[1]) {
         setStorageZone(zoneMatch[1]);
         setScanResult("");
-        message.success(`Установлена зона хранения: ${zoneMatch[1]}`);
       }
     } else {
       const result = storageZone
         ? `${storageZone}(${decodedText})`
         : decodedText;
       setScanResult(result);
-      message.success(`Отсканирован товар: ${result}`);
     }
   };
 
@@ -160,7 +112,6 @@ export const WarehouseReceivePage: React.FC = () => {
 
   const resetStorageZone = () => {
     setStorageZone("");
-    message.info("Зона хранения сброшена");
   };
 
   return (
