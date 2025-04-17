@@ -9,14 +9,14 @@ const menuItems: MenuProps["items"] = [
   { label: "Главная", key: "/home" },
   { label: "Аккаунт", key: "/account" },
   { label: "Рейсы", key: "/shifts" },
-  // {
-  //   label: "Склад",
-  //   key: "/warehouse",
-  //   children: [
-  //     { label: "Принять на склад", key: "/warehouse/receive" },
-  //     { label: "Выгрузить со склада", key: "/warehouse/ship" },
-  //   ],
-  // },
+  {
+    label: "Склад",
+    key: "/warehouse",
+    children: [
+      { label: "Принять на склад", key: "/warehouse/receive" },
+      { label: "Выгрузить со склада", key: "/warehouse/ship" },
+    ],
+  },
 ];
 
 export const Navbar: React.FC = () => {

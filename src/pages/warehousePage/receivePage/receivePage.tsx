@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
-import { Switch, Input, message, Button } from "antd";
+import { Switch, Input, Button, message, Space, Card } from "antd";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
 
 export const WarehouseReceivePage: React.FC = () => {
   const dispatch = useDispatch();
   const isMobile = useMobileDetection();
   const [inputMode, setInputMode] = useState<boolean>(false);
-  const [qrResult, setQrResult] = useState<string>("");
-  const [storageZone, setStorageZone] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const scannerRef = useRef<any>(null);
+  const [manualInput, setManualInput] = useState<string>("");
+  const [scanResult, setScanResult] = useState<string>("");
+  const [storageZone, setStorageZone] = useState<string>("");
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const qrContainerId = "qr-reader-container";
 
   useEffect(() => {
     dispatch(
@@ -21,143 +23,123 @@ export const WarehouseReceivePage: React.FC = () => {
         { label: "Принять на склад", to: "/warehouse/receive" },
       ])
     );
-  }, [dispatch]);
 
-  const handleSwitchChange = async (checked: boolean) => {
-    setInputMode(checked);
-    setQrResult("");
+    // На мобильных устройствах по умолчанию используем QR-режим
+    // if (isMobile) {
+    //   setInputMode(false);
+    // }
 
-    if (!checked) {
-      await initQrScanner();
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear();
+      }
+    };
+  }, [dispatch, isMobile]);
+
+  useEffect(() => {
+    if (!inputMode) {
+      initQRScanner();
     } else {
       if (scannerRef.current) {
-        scannerRef.current.stop();
+        scannerRef.current.clear();
         scannerRef.current = null;
       }
     }
+  }, [inputMode, isMobile]);
+
+  const getScannerConfig = () => {
+    return {
+      fps: 10,
+      qrbox: isMobile
+        ? { width: 200, height: 200 }
+        : { width: 250, height: 250 },
+      supportedScanTypes: [],
+    };
   };
 
-  const initQrScanner = async () => {
-    try {
-      const QrScanner = (await import("qr-scanner")).default;
+  const initQRScanner = () => {
+    if (scannerRef.current) return;
 
-      if (videoRef.current) {
-        scannerRef.current = new QrScanner(
-          videoRef.current,
-          (result: any) => {
-            const text = result.data;
-            handleQrResult(text);
-          },
-          {
-            highlightScanRegion: true,
-            highlightCodeOutline: true,
-            maxScansPerSecond: 5,
-            preferredCamera: isMobile ? "environment" : "user",
-          }
-        );
-        await scannerRef.current.start();
+    const scanner = new Html5QrcodeScanner(
+      qrContainerId,
+      getScannerConfig(),
+      false
+    );
+
+    scanner.render(
+      (decodedText) => {
+        handleScanResult(decodedText);
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
       }
-    } catch (error) {
-      console.error("Ошибка при инициализации QR-сканера:", error);
-      message.error("Не удалось инициализировать QR-сканер");
+    );
+
+    scannerRef.current = scanner;
+  };
+
+  const handleScanResult = (decodedText: string) => {
+    const zoneRegex = /^[0-9]{4}-[0-9]{4}-([0-9]{3})$/;
+    const isZone = zoneRegex.test(decodedText);
+
+    if (isZone) {
+      const zoneMatch = decodedText.match(zoneRegex);
+      if (zoneMatch && zoneMatch[1]) {
+        setStorageZone(zoneMatch[1]);
+        setScanResult("");
+        message.success(`Установлена зона хранения: ${zoneMatch[1]}`);
+      }
+    } else {
+      const result = storageZone
+        ? `${storageZone}(${decodedText})`
+        : decodedText;
+      setScanResult(result);
+      message.success(`Отсканирован товар: ${result}`);
     }
   };
 
-  const handleQrResult = (text: string) => {
-    const zoneMatch = text.match(/^(0000-0000-)(\d+)$/);
+  const handleSwitchChange = (checked: boolean) => {
+    setInputMode(checked);
+  };
 
-    if (zoneMatch) {
-      const zoneCode = zoneMatch[2];
-      setStorageZone(zoneCode);
-      setQrResult("");
-      message.success(`Зона хранения установлена: ${zoneCode}`);
-    } else {
-      if (storageZone) {
-        setQrResult(`${storageZone}(${text})`);
-      } else {
-        setQrResult(text);
-      }
-      message.success("QR-код успешно отсканирован!");
+  const handleManualInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setManualInput(e.target.value);
+  };
+
+  const handleManualSubmit = () => {
+    if (manualInput.trim()) {
+      handleScanResult(manualInput);
+      setManualInput("");
     }
   };
 
   const resetStorageZone = () => {
-    setStorageZone(null);
+    setStorageZone("");
     message.info("Зона хранения сброшена");
   };
 
-  useEffect(() => {
-    if (!inputMode) {
-      initQrScanner();
-    }
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop();
-        scannerRef.current = null;
-      }
-    };
-  }, [inputMode, isMobile]);
-
-  // Стили для мобильных устройств
-  const mobileStyles = {
-    container: {
-      padding: "10px",
-    },
-    title: {
-      fontSize: "1.4rem",
-      marginBottom: "20px",
-      textAlign: "center" as const,
-    },
-    video: {
-      width: "100%",
-      maxWidth: "none",
-      border: "2px solid #fa8c16",
-      borderRadius: "8px",
-      height: "auto",
-    },
-    input: {
-      width: "100%",
-      marginBottom: "10px",
-    },
-    button: {
-      marginLeft: "10px",
-    },
-  };
-
-  const desktopStyles = {
-    container: {
-      padding: "20px",
-    },
-    title: {
-      fontSize: "1.8rem",
-      marginBottom: "30px",
-    },
-    video: {
-      width: "100%",
-      maxWidth: "500px",
-      border: "2px solid #fa8c16",
-      borderRadius: "8px",
-    },
-    input: {
-      width: "300px",
-      marginBottom: "10px",
-    },
-    button: {
-      marginLeft: "10px",
-    },
-  };
-
-  const styles = isMobile ? mobileStyles : desktopStyles;
-
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>{inputMode ? "Ручной ввод" : "QR-сканер"}</h1>
+    <div style={{ padding: isMobile ? "10px" : "20px" }}>
+      <h1
+        style={{
+          fontSize: isMobile ? "1.4rem" : "1.8rem",
+          marginBottom: isMobile ? "15px" : "30px",
+          textAlign: isMobile ? "center" : "left",
+        }}
+      >
+        {inputMode ? "Ручной ввод" : "Сканирование QR-кода"}
+      </h1>
 
-      <div style={{ marginBottom: "20px" }}>
+      <div
+        style={{
+          marginBottom: isMobile ? "15px" : "20px",
+          display: "flex",
+          justifyContent: isMobile ? "center" : "flex-start",
+        }}
+      >
         <Switch
-          checkedChildren=""
-          unCheckedChildren=""
+          checkedChildren={isMobile ? "Ручной" : "Ручной ввод"}
+          unCheckedChildren="QR"
           checked={inputMode}
           onChange={handleSwitchChange}
           style={{
@@ -166,52 +148,69 @@ export const WarehouseReceivePage: React.FC = () => {
         />
       </div>
 
-      {inputMode ? (
-        <>
-          <Input
-            placeholder="Введите данные вручную"
-            style={styles.input}
-            value={qrResult}
-            onChange={(e) => setQrResult(e.target.value)}
+      <Space
+        direction="vertical"
+        size={isMobile ? "small" : "middle"}
+        style={{ width: "100%" }}
+      >
+        <Card title="Зона хранения" size="small">
+          <Space>
+            <Input
+              value={storageZone}
+              placeholder="Не указана"
+              readOnly
+              style={{ width: isMobile ? "60%" : "200px" }}
+            />
+            <Button
+              onClick={resetStorageZone}
+              danger
+              size={isMobile ? "small" : "middle"}
+            >
+              {isMobile ? "Сброс" : "Сбросить зону"}
+            </Button>
+          </Space>
+        </Card>
+
+        <Card title="Результат" size="small">
+          <Input.TextArea
+            value={scanResult}
+            readOnly
+            autoSize={{ minRows: 3, maxRows: 6 }}
+            style={{ width: "100%" }}
           />
-          {storageZone && (
-            <div style={{ marginBottom: "10px" }}>
-              <span>Зона хранения: {storageZone}</span>
-              <Button
-                onClick={resetStorageZone}
-                style={styles.button}
-                size={isMobile ? "middle" : "small"}
-              >
-                Сбросить
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div>
-          <video ref={videoRef} style={styles.video}></video>
+        </Card>
 
-          {storageZone && (
-            <div style={{ margin: "10px 0" }}>
-              <span>Текущая зона хранения: {storageZone}</span>
-              <Button
-                onClick={resetStorageZone}
-                style={styles.button}
-                size={isMobile ? "middle" : "small"}
-              >
-                Сбросить
-              </Button>
-            </div>
-          )}
-
-          {qrResult && (
-            <div style={{ marginTop: "20px" }}>
-              <h3>Результат сканирования:</h3>
-              <p>{qrResult}</p>
-            </div>
-          )}
-        </div>
-      )}
+        {inputMode ? (
+          <Space.Compact style={{ width: "100%" }}>
+            <Input
+              placeholder={
+                isMobile ? "Введите данные" : "Введите данные вручную"
+              }
+              value={manualInput}
+              onChange={handleManualInputChange}
+              onPressEnter={handleManualSubmit}
+              size={isMobile ? "small" : "middle"}
+            />
+            <Button
+              type="primary"
+              onClick={handleManualSubmit}
+              size={isMobile ? "small" : "middle"}
+            >
+              {isMobile ? "OK" : "Отправить"}
+            </Button>
+          </Space.Compact>
+        ) : (
+          <div
+            id={qrContainerId}
+            style={{
+              width: "100%",
+              maxWidth: isMobile ? "100%" : "500px",
+              margin: "0 auto",
+              padding: isMobile ? "0 10px" : "0",
+            }}
+          />
+        )}
+      </Space>
     </div>
   );
 };
