@@ -7,8 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../redux/store";
 import { setActiveCity } from "../../../../redux/slices/shiftGroupsSlice";
 
-const { Panel } = Collapse;
-
 export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
   React.memo(({ data, rowKey = "id", shiftId }) => {
     const dispatch = useDispatch();
@@ -25,7 +23,6 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
       [data]
     );
 
-    // Выносим вызовы хуков на верхний уровень
     const senderColumns = useManifestsColumns(shiftId, "sender");
     const recipientColumns = useManifestsColumns(shiftId, "recipient");
 
@@ -39,41 +36,16 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
       [dispatch, shiftId]
     );
 
-    const renderPanelHeader = useCallback(
-      (city: string, count: number) => (
-        <Typography.Text strong>
-          {city}
-          <Typography.Text
-            style={
-              {
-                // marginLeft: 4
-              }
-            }
-          >
-            ({count})
-          </Typography.Text>
-        </Typography.Text>
-      ),
-      []
-    );
-
     const renderTableSection = useCallback(
       (type: "sender" | "recipient", manifests: any[], columns: any) => {
         if (manifests.length === 0) return null;
 
         const title = type === "sender" ? "Загрузить" : "Выгрузить";
         return (
-          <div
-            style={
-              {
-                // marginBottom: type === "sender" ? 8 : 0
-              }
-            }
-          >
+          <div>
             <Divider
               orientation="left"
               style={{
-                // margin: "4px 0",
                 fontSize: 14,
                 lineHeight: 1.2,
               }}
@@ -98,31 +70,39 @@ export const DesktopManifestsTable: React.FC<ManifestsComponentProps> =
       [groupState.activeCity]
     );
 
-    return (
-      <Collapse
-        activeKey={activeKey}
-        onChange={handleCityChange}
-        ghost
-        style={{ background: "none" }}
-        accordion
-      >
-        {groupedManifests.map((group) => (
-          <Panel
-            header={renderPanelHeader(
-              group.city,
-              group.asSender.length + group.asRecipient.length
-            )}
-            key={`city-${group.city}`}
-            style={{ padding: "8px 0" }}
-          >
+    const collapseItems = useMemo(() => {
+      return groupedManifests.map((group) => ({
+        key: `city-${group.city}`,
+        label: (
+          <Typography.Text strong>
+            {group.city}
+            <Typography.Text>
+              ({group.asSender.length + group.asRecipient.length})
+            </Typography.Text>
+          </Typography.Text>
+        ),
+        children: (
+          <>
             {renderTableSection("sender", group.asSender, senderColumns)}
             {renderTableSection(
               "recipient",
               group.asRecipient,
               recipientColumns
             )}
-          </Panel>
-        ))}
-      </Collapse>
+          </>
+        ),
+        style: { padding: "8px 0" },
+      }));
+    }, [groupedManifests, renderTableSection, senderColumns, recipientColumns]);
+
+    return (
+      <Collapse
+        items={collapseItems}
+        activeKey={activeKey}
+        onChange={handleCityChange}
+        ghost
+        style={{ background: "none" }}
+        accordion
+      />
     );
   });

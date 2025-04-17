@@ -18,7 +18,7 @@ export const WarehouseReceivePage: React.FC = () => {
   const qrContainerId = "qr-reader-container";
   const audioContextRef = useRef<AudioContext | null>(null);
   const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
-  const modalRenderedRef = useRef(false);
+  // const modalRenderedRef = useRef(false);
 
   useEffect(() => {
     dispatch(
@@ -51,10 +51,10 @@ export const WarehouseReceivePage: React.FC = () => {
 
   const getScannerConfig = () => {
     return {
-      fps: 10,
+      fps: 1,
       qrbox: {
-        width: 250,
-        height: 250,
+        width: isMobile ? 250 : 300,
+        height: isMobile ? 250 : 300,
       },
       supportedScanTypes: [],
     };
@@ -88,7 +88,7 @@ export const WarehouseReceivePage: React.FC = () => {
       }
 
       // Добавляем небольшую задержку для гарантии, что DOM-элемент существует
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (qrCodeRef.current && !qrCodeRef.current.isScanning) {
         await qrCodeRef.current.start(
@@ -245,7 +245,7 @@ export const WarehouseReceivePage: React.FC = () => {
           <Input.TextArea
             value={scanResult}
             readOnly
-            autoSize={{ minRows: 3, maxRows: 6 }}
+            autoSize={{ minRows: 1, maxRows: 2 }}
             style={{ width: "100%" }}
           />
         </Card>
@@ -288,7 +288,6 @@ export const WarehouseReceivePage: React.FC = () => {
         onCancel={handleModalCancel}
         afterOpenChange={(open) => {
           if (open) {
-            // Убедимся, что модальное окно полностью отрендерилось
             setTimeout(() => {
               initScanner();
             }, 100);
