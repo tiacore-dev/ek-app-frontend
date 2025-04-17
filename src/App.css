@@ -52,3 +52,32 @@ body,
 * {
   box-sizing: border-box;
 }
+
+/* В вашем CSS-файле или styled-components */
+#qr-reader-container {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#qr-reader-container video {
+  border-radius: 8px;
+}
+
+#qr-reader-container .html5-qrcode-element {
+  margin: 8px auto;
+  padding: 8px 12px;
+  background: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+#qr-reader-container .html5-qrcode-camera-selection {
+  background: white;
+  color: #333;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 8px;
+}
