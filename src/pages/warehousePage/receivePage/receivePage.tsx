@@ -24,7 +24,6 @@ export const WarehouseReceivePage: React.FC = () => {
       ])
     );
 
-    // На мобильных устройствах по умолчанию используем QR-режим
     // if (isMobile) {
     //   setInputMode(false);
     // }
@@ -32,6 +31,7 @@ export const WarehouseReceivePage: React.FC = () => {
     return () => {
       if (scannerRef.current) {
         scannerRef.current.clear();
+        scannerRef.current = null;
       }
     };
   }, [dispatch, isMobile]);
@@ -48,38 +48,83 @@ export const WarehouseReceivePage: React.FC = () => {
   }, [inputMode, isMobile]);
 
   const getScannerConfig = () => {
-    return {
+    const config = {
       fps: 10,
       qrbox: isMobile
         ? { width: 200, height: 200 }
         : { width: 250, height: 250 },
-      supportedScanTypes: [],
+      rememberLastUsedCamera: false,
     };
+
+    // Добавляем настройки камеры только для мобильных устройств
+    if (isMobile) {
+      return {
+        ...config,
+        videoConstraints: {
+          facingMode: { exact: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      };
+    }
+    return config;
   };
 
   const initQRScanner = () => {
     if (scannerRef.current) return;
 
-    const scanner = new Html5QrcodeScanner(
-      qrContainerId,
-      getScannerConfig(),
-      false
-    );
+    const config = getScannerConfig();
+    const scanner = new Html5QrcodeScanner(qrContainerId, config, false);
 
-    scanner.render(
-      (decodedText) => {
-        handleScanResult(decodedText);
-      },
-      (errorMessage) => {
-        console.log(errorMessage);
-      }
-    );
+    try {
+      scanner.render(
+        (decodedText) => handleScanResult(decodedText),
+        (errorMessage) => {
+          console.log(errorMessage);
+          // Если произошла ошибка при сканировании, пробуем перезапустить с базовыми настройками
+          if (isMobile) {
+            scanner.clear();
+            const fallbackScanner = new Html5QrcodeScanner(
+              qrContainerId,
+              {
+                fps: 10,
+                qrbox: { width: 200, height: 200 },
+              },
+              false
+            );
+            fallbackScanner.render(
+              (decodedText) => handleScanResult(decodedText),
+              (errorMessage) => console.log(errorMessage)
+            );
+            scannerRef.current = fallbackScanner;
+          }
+        }
+      );
+    } catch (err) {
+      console.warn("Не удалось инициализировать сканер:", err);
+      // Пробуем снова с базовыми настройками
+      const fallbackScanner = new Html5QrcodeScanner(
+        qrContainerId,
+        {
+          fps: 10,
+          qrbox: isMobile
+            ? { width: 200, height: 200 }
+            : { width: 250, height: 250 },
+        },
+        false
+      );
+      fallbackScanner.render(
+        (decodedText) => handleScanResult(decodedText),
+        (errorMessage) => console.log(errorMessage)
+      );
+      scannerRef.current = fallbackScanner;
+    }
 
     scannerRef.current = scanner;
   };
 
   const handleScanResult = (decodedText: string) => {
-    const zoneRegex = /^[0-9]{4}-[0-9]{4}-([0-9]{3})$/;
+    const zoneRegex = /^[0]{4}-[0]{4}-([0-9]{3})$/;
     const isZone = zoneRegex.test(decodedText);
 
     if (isZone) {
