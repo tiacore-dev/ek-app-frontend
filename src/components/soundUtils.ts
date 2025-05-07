@@ -9,7 +9,7 @@ export class SoundUtils {
     }
   }
 
-  public playBeepSound() {
+  public playBeepSound(type: "success" | "error" = "success") {
     try {
       if (!this.audioContext) {
         this.audioContext = new (window.AudioContext ||
@@ -23,11 +23,20 @@ export class SoundUtils {
       gainNode.connect(this.audioContext.destination);
 
       oscillator.type = "triangle";
-      oscillator.frequency.value = 750;
-      gainNode.gain.value = 0.1;
 
-      oscillator.start();
-      oscillator.stop(this.audioContext.currentTime + 0.1);
+      if (type === "success") {
+        // Высокий короткий звук для успеха
+        oscillator.frequency.value = 800;
+        gainNode.gain.value = 0.1;
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+      } else {
+        // Низкий долгий звук для ошибки
+        oscillator.frequency.value = 400;
+        gainNode.gain.value = 0.1;
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.7);
+      }
     } catch (error) {
       console.error("Ошибка воспроизведения звука:", error);
     }

@@ -110,6 +110,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     if (!isParcelInManifest) {
       setErrorMessage(`Накладная ${parcelNumber} не найдена в манифесте`);
       setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
       return;
     }
 
@@ -126,18 +127,20 @@ export const ScanParcelItemsPage: React.FC = () => {
       );
       setErrorDescription(`Сканирование места ${itemNumber} невозможно`);
       setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
       return;
     }
 
     if (!allRequiredItems.includes(formattedCode)) {
       setErrorMessage(`Место ${formattedCode} не найдено в манифесте`);
       setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
       return;
     }
 
     if (!scannedItems.includes(formattedCode)) {
       setScannedItems((prev) => [...prev, formattedCode]);
-      soundUtilsRef.current.playBeepSound();
+      soundUtilsRef.current.playBeepSound("success"); // Звук успеха
       api.success({
         message: `Место ${formattedCode} отсканировано`,
         placement: "topRight",
@@ -146,6 +149,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     } else {
       setErrorMessage(`Место ${formattedCode} уже было отсканировано`);
       setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
     }
   };
 
