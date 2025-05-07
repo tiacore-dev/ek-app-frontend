@@ -26,13 +26,13 @@ export class SoundUtils {
 
       if (type === "success") {
         // Высокий короткий звук для успеха
-        oscillator.frequency.value = 800;
+        oscillator.frequency.value = 500;
         gainNode.gain.value = 0.1;
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + 0.2);
       } else {
         // Низкий долгий звук для ошибки
-        oscillator.frequency.value = 400;
+        oscillator.frequency.value = 900;
         gainNode.gain.value = 0.1;
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + 0.7);
