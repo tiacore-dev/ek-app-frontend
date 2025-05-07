@@ -5,6 +5,7 @@ import {
   postManifestLoading,
   postManifestUploading,
 } from "../../../../api/shiftsApi";
+import { Link } from "react-router-dom";
 
 interface ManifestActionsProps {
   type: "sender" | "recipient";
@@ -88,9 +89,21 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   return (
     <div onClick={(e) => e.stopPropagation()}>
       {type === "sender" && (
-        <Button size="small" onClick={showModal} {...getButtonProps()}>
-          Загружено
-        </Button>
+        <>
+          {/* <Button
+            size="small"
+            onClick={showModal}
+            {...getButtonProps()}
+            style={{ marginBottom: 8 }}
+          >
+            Загружено
+          </Button> */}
+          <Link to={`/scan-parcels/${manifestId}`}>
+            <Button type="default" size="small" {...getButtonProps()}>
+              Загрузить
+            </Button>
+          </Link>
+        </>
       )}
       {type === "recipient" && (
         <Button size="small" onClick={showModal} {...getButtonProps()}>

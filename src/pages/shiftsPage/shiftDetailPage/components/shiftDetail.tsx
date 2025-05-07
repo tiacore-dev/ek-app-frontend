@@ -21,6 +21,7 @@ import {
 } from "../../../../api/shiftsApi";
 import dayjs from "dayjs";
 import { CaretRightOutlined, DoubleRightOutlined } from "@ant-design/icons";
+import { useLocation } from "react-router-dom";
 
 const isValidDate = (timestamp?: number): boolean => {
   if (!timestamp) return false;
@@ -82,6 +83,8 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
   );
   const [loadingAutoStatus, setLoadingAutoStatus] = useState(false);
   const [processingAction, setProcessingAction] = useState(false);
+  const location = useLocation();
+  const isFromHome = location.pathname.startsWith("/home");
 
   useEffect(() => {
     const loadAutoStatus = async () => {
@@ -312,7 +315,8 @@ export const ShiftDetails: React.FC<ShiftDetailsProps> = ({
               {/* Кнопка "Начать смену" - только когда авто доступно и смена не начата */}
               {autoStatus.auto_status === "available" &&
                 shift.get_auto === null &&
-                shift.return_auto === null && (
+                shift.return_auto === null &&
+                isFromHome && (
                   <>
                     <Button
                       type="primary"

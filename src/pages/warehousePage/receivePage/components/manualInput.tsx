@@ -1,25 +1,26 @@
+// src/components/WarehouseReceive/ManualInput.tsx
 import React from "react";
 import { Input, Button, Space } from "antd";
 
 interface ManualInputProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: () => void;
-  isMobile?: boolean;
+  isMobile: boolean;
 }
 
 export const ManualInput: React.FC<ManualInputProps> = ({
   value,
   onChange,
   onSubmit,
-  isMobile = false,
+  isMobile,
 }) => {
   return (
     <Space.Compact style={{ width: "100%" }}>
       <Input
         placeholder={isMobile ? "Введите данные" : "Введите данные вручную"}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         onPressEnter={onSubmit}
         size={isMobile ? "small" : "middle"}
       />

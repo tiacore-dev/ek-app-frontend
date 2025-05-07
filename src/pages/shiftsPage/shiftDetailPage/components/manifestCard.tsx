@@ -67,16 +67,18 @@ export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
             Дата:{" "}
           </Typography.Text>
           <Typography.Text>{formatDate(manifest.date)}</Typography.Text>
-          <Typography.Text strong style={{ color: labelColor }}>
-            {" "}
-            Мест:{" "}
-          </Typography.Text>
-          <Typography.Text>{manifest.pieces_count || "—"}</Typography.Text>
-          <Typography.Text strong style={{ color: labelColor }}>
-            {" "}
-            Накладных:{" "}
-          </Typography.Text>
-          <Typography.Text>{manifest.parcels_count || "—"}</Typography.Text>
+          <div>
+            <Typography.Text strong style={{ color: labelColor }}>
+              {" "}
+              Накладных:{" "}
+            </Typography.Text>
+            <Typography.Text>{manifest.parcels_count || "—"}</Typography.Text>
+            {/* <Typography.Text strong style={{ color: labelColor }}>
+              {" "}
+              Мест:{" "}
+            </Typography.Text>
+            <Typography.Text>{manifest.pieces_count || "—"}</Typography.Text> */}
+          </div>
         </>
       ),
       [manifest.date, manifest.pieces_count, manifest.parcels_count, labelColor]

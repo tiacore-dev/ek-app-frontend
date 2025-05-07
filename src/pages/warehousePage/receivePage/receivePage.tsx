@@ -4,6 +4,7 @@ import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { Switch, Input, Button, Space, Card, message, Modal } from "antd";
 import { Html5Qrcode } from "html5-qrcode";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
+import { SoundUtils } from "../../../components/soundUtils";
 
 export const WarehouseReceivePage: React.FC = () => {
   const dispatch = useDispatch();
@@ -16,9 +17,7 @@ export const WarehouseReceivePage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const qrCodeRef = useRef<Html5Qrcode | null>(null);
   const qrContainerId = "qr-reader-container";
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
-  // const modalRenderedRef = useRef(false);
+  const soundUtilsRef = useRef<SoundUtils | null>(null);
 
   useEffect(() => {
     dispatch(
@@ -29,25 +28,13 @@ export const WarehouseReceivePage: React.FC = () => {
       ])
     );
 
+    soundUtilsRef.current = new SoundUtils();
+
     return () => {
       stopScanner();
-      if (
-        audioContextRef.current &&
-        audioContextRef.current.state !== "closed"
-      ) {
-        audioContextRef.current.close();
-      }
+      soundUtilsRef.current?.cleanup();
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    speechSynthesisRef.current = window.speechSynthesis;
-    return () => {
-      if (speechSynthesisRef.current) {
-        speechSynthesisRef.current.cancel();
-      }
-    };
-  }, []);
 
   const getScannerConfig = () => {
     return {
@@ -87,9 +74,6 @@ export const WarehouseReceivePage: React.FC = () => {
         qrCodeRef.current = new Html5Qrcode(qrContainerId);
       }
 
-      // Добавляем небольшую задержку для гарантии, что DOM-элемент существует
-      // await new Promise((resolve) => setTimeout(resolve, 100));
-
       if (qrCodeRef.current && !qrCodeRef.current.isScanning) {
         await qrCodeRef.current.start(
           { facingMode: "environment" },
@@ -106,43 +90,6 @@ export const WarehouseReceivePage: React.FC = () => {
     }
   };
 
-  const playBeepSound = () => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
-      }
-
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-
-      oscillator.type = "triangle";
-      oscillator.frequency.value = 750;
-      gainNode.gain.value = 0.1;
-
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 0.1);
-    } catch (error) {
-      console.error("Ошибка воспроизведения звука:", error);
-    }
-  };
-
-  const speakNumbers = (numbers: string) => {
-    if (!speechSynthesisRef.current) return;
-
-    speechSynthesisRef.current.cancel();
-
-    const utterance = new SpeechSynthesisUtterance();
-    utterance.text = `Зона хранения ${numbers.split("").join(" ")}`;
-    utterance.lang = "ru-RU";
-    utterance.rate = 0.8;
-
-    speechSynthesisRef.current.speak(utterance);
-  };
-
   const handleScanResult = async (decodedText: string) => {
     const zoneRegex = /^[0]{4}-[0]{4}-([0-9]{3})$/;
     const isZone = zoneRegex.test(decodedText);
@@ -153,14 +100,14 @@ export const WarehouseReceivePage: React.FC = () => {
         setStorageZone(zoneMatch[1]);
         setScanResult("");
         await stopScanner();
-        speakNumbers(zoneMatch[1]);
+        soundUtilsRef.current?.speakNumbers(zoneMatch[1]);
       }
     } else {
       const result = storageZone
         ? `${storageZone}(${decodedText})`
         : decodedText;
       setScanResult((prev) => (prev ? `${prev}\n${result}` : result));
-      playBeepSound();
+      soundUtilsRef.current?.playBeepSound();
       await stopScanner();
     }
   };
@@ -236,7 +183,7 @@ export const WarehouseReceivePage: React.FC = () => {
               danger
               size={isMobile ? "small" : "middle"}
             >
-              {isMobile ? "Сброс" : "Сбросить зону"}
+              {isMobile ? "Сбросить" : "Сбросить зону"}
             </Button>
           </Space>
         </Card>
@@ -276,7 +223,7 @@ export const WarehouseReceivePage: React.FC = () => {
               onClick={startScanner}
               size={isMobile ? "small" : "middle"}
             >
-              Старт сканирования
+              Начать сканирования
             </Button>
           </div>
         )}

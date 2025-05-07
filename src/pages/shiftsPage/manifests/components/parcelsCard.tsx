@@ -18,20 +18,6 @@ const formatDate = (timestamp?: number) => {
 
 export const ParcelCard: React.FC<ParcelCardProps> = React.memo(
   ({ parcel, manifestId }) => {
-    // const renderCounterparty = useCallback(
-    //   () => (
-    //     <>
-    //       <Typography.Text strong style={{ color: "#2444b5" }}>
-    //         {type === "sender" ? "Получатель: " : "Отправитель: "}
-    //       </Typography.Text>
-    //       <Typography.Text>
-    //         {type === "sender" ? parcel.recCity || "—" : parcel.sendCity || "—"}
-    //       </Typography.Text>
-    //     </>
-    //   ),
-    //   [type, parcel.recCity, parcel.sendCity]
-    // );
-
     const renderDetails = useCallback(
       () => (
         <>
@@ -63,7 +49,7 @@ export const ParcelCard: React.FC<ParcelCardProps> = React.memo(
       <Card
         className="clickable-card"
         size="small"
-        title={parcel.customer}
+        title={parcel.number}
         style={{
           width: "100%",
           maxWidth: "100%",

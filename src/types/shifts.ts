@@ -25,6 +25,7 @@ export interface IListParcels {
   count: number;
   weight: number;
   volume: number;
+  number: string;
 }
 
 export interface IManifestLoadingResponse {
