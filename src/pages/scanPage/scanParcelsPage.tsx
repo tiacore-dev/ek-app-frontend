@@ -226,10 +226,12 @@ export const ScanParcelItemsPage: React.FC = () => {
           </Radio.Group>
         </div>
         {/* Активный сканер */}
-        {scanMethod === "zebra" && <ZebraScanner onScan={handleScanResult} />}
+        {scanMethod === "zebra" && (
+          <ZebraScanner key={scannedItems.length} onScan={handleScanResult} />
+        )}
 
         {scanMethod === "barcode" && (
-          <BarcodeScanner onScan={handleScanResult} />
+          <BarcodeScanner key={scannedItems.length} onScan={handleScanResult} />
         )}
 
         <CameraScanner
