@@ -91,8 +91,14 @@ export interface IExtraPayment {
   description: string;
   summ: number;
 }
+
 export interface IManifestLoadingRequest {
   comment?: string;
+  scannedItems?: Array<{
+    parcelNumber: string;
+    place: number;
+    scanTime: string;
+  }>;
 }
 
 export interface IListManifest {

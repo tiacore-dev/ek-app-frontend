@@ -21,17 +21,23 @@ import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
 
+interface ScannedItem {
+  place: number;
+  date: string;
+}
+
+type ScannedParcels = Record<string, ScannedItem[]>;
+
 export const ScanParcelItemsPage: React.FC = () => {
   const { manifest_id: manifestId } = useParams<{ manifest_id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [api, contextHolder] = notification.useNotification();
-  const [scannedItems, setScannedItems] = useState<string[]>([]);
+  const [scannedItems, setScannedItems] = useState<ScannedParcels>({});
   const [scanMethod, setScanMethod] = useState<ScanMethod>("camera");
   const [isCameraModalVisible, setIsCameraModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [errorDescription, setErrorDescription] = useState("");
   const soundUtilsRef = React.useRef<SoundUtils>(new SoundUtils());
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const location = useLocation();
@@ -70,38 +76,38 @@ export const ScanParcelItemsPage: React.FC = () => {
     dispatch(setBreadcrumbs(breadcrumbs));
   }, [manifestData, dispatch, location.pathname]);
 
-  // Функция для извлечения ID рейса из пути
   const getShiftIdFromPath = (path: string) => {
     const parts = path.split("/");
     const shiftIndex = parts.indexOf("shifts") + 1;
     return shiftIndex > 0 && shiftIndex < parts.length ? parts[shiftIndex] : "";
   };
 
-  // Создаем массив всех необходимых к сканированию items
-  const allRequiredItems =
-    manifestData?.parcels?.flatMap((parcel) =>
-      Array.from(
-        { length: parcel.count },
-        (_, i) => `${parcel.number}%${i + 1}`
-      )
-    ) || [];
+  const allRequiredItemsCount =
+    manifestData?.parcels?.reduce((sum, parcel) => sum + parcel.count, 0) || 0;
 
-  // Проверяем, все ли места отсканированы
-  const allItemsScanned = allRequiredItems.every((item) =>
-    scannedItems.includes(item)
+  const scannedItemsCount = Object.values(scannedItems).reduce(
+    (sum, items) => sum + items.length,
+    0
   );
 
-  // Вычисляем прогресс сканирования
+  const allItemsScanned =
+    manifestData?.parcels?.every((parcel) => {
+      const scannedPlaces = scannedItems[parcel.number] || [];
+      return scannedPlaces.length === parcel.count;
+    }) || false;
+
   const scanProgress =
-    allRequiredItems.length > 0
-      ? Math.round((scannedItems.length / allRequiredItems.length) * 100)
+    allRequiredItemsCount > 0
+      ? Math.round((scannedItemsCount / allRequiredItemsCount) * 100)
       : 0;
 
-  // Обработка результатов сканирования
   const handleScanResult = (result: string) => {
     notification.destroy();
 
-    const parcelNumber = result.includes("%") ? result.split("%")[0] : result;
+    const [parcelNumber, placeStr] = result.includes("%")
+      ? result.split("%")
+      : [result, "1"];
+    const place = parseInt(placeStr);
 
     const isParcelInManifest = manifestData?.parcels?.some(
       (parcel) => parcel.number === parcelNumber
@@ -110,50 +116,53 @@ export const ScanParcelItemsPage: React.FC = () => {
     if (!isParcelInManifest) {
       setErrorMessage(`Накладная ${parcelNumber} не найдена в манифесте`);
       setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
+      soundUtilsRef.current.playBeepSound("error");
       return;
     }
-
-    const itemNumber = result.includes("%") ? result.split("%")[1] || "1" : "1";
-    const formattedCode = `${parcelNumber}%${itemNumber}`;
 
     const targetParcel = manifestData?.parcels?.find(
       (parcel) => parcel.number === parcelNumber
     );
 
-    if (targetParcel && parseInt(itemNumber) > targetParcel.count) {
+    if (targetParcel && place > targetParcel.count) {
       setErrorMessage(
         `Ошибка: у накладной ${parcelNumber} только ${targetParcel.count} мест`
       );
-      setErrorDescription(`Сканирование места ${itemNumber} невозможно`);
       setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
+      soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    if (!allRequiredItems.includes(formattedCode)) {
-      setErrorMessage(`Место ${formattedCode} не найдено в манифесте`);
-      setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
-      return;
-    }
+    const alreadyScanned = scannedItems[parcelNumber]?.some(
+      (item) => item.place === place
+    );
 
-    if (!scannedItems.includes(formattedCode)) {
-      setScannedItems((prev) => [...prev, formattedCode]);
-      soundUtilsRef.current.playBeepSound("success"); // Звук успеха
+    if (!alreadyScanned) {
+      setScannedItems((prev) => ({
+        ...prev,
+        [parcelNumber]: [
+          ...(prev[parcelNumber] || []),
+          {
+            place,
+            date: new Date().toISOString(),
+          },
+        ],
+      }));
+      soundUtilsRef.current.playBeepSound("success");
       api.success({
-        message: `Место ${formattedCode} отсканировано`,
+        message: `Место ${parcelNumber}%${place} отсканировано`,
         placement: "topRight",
         duration: 2,
       });
     } else {
-      setErrorMessage(`Место ${formattedCode} уже было отсканировано`);
+      setErrorMessage(`Место ${parcelNumber}%${place} уже было отсканировано`);
       setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error"); // Звук ошибки
+      soundUtilsRef.current.playBeepSound("error");
     }
   };
 
   const handleSubmit = () => {
+    console.log("!!!!!", scannedItems);
     if (!allItemsScanned) {
       setConfirmModalVisible(true);
     } else {
@@ -162,12 +171,22 @@ export const ScanParcelItemsPage: React.FC = () => {
   };
 
   const submitManifest = () => {
+    // Преобразуем объект scannedItems в массив для сервера
+    const scannedItemsArray = Object.entries(scannedItems).flatMap(
+      ([parcelNumber, items]) =>
+        items.map((item) => ({
+          parcelNumber,
+          place: item.place,
+          scanTime: item.date,
+        }))
+    );
+
     mutation.mutate(
       {
-        comment:
-          scannedItems.length === allRequiredItems.length
-            ? "Все места накладных отсканированы"
-            : `Отсканировано ${scannedItems.length} из ${allRequiredItems.length} мест`,
+        comment: allItemsScanned
+          ? "Все места накладных отсканированы"
+          : `Отсканировано ${scannedItemsCount} из ${allRequiredItemsCount} мест`,
+        scannedItems: scannedItemsArray,
       },
       {
         onSuccess: () => {
@@ -179,7 +198,7 @@ export const ScanParcelItemsPage: React.FC = () => {
   };
 
   const clearResult = () => {
-    setScannedItems([]);
+    setScannedItems({});
   };
 
   if (!manifestId) {
@@ -190,7 +209,6 @@ export const ScanParcelItemsPage: React.FC = () => {
     <div>
       {contextHolder}
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        {/* Выбор метода сканирования */}
         <div
           style={{
             display: "flex",
@@ -209,7 +227,7 @@ export const ScanParcelItemsPage: React.FC = () => {
               value="zebra"
               style={{ flex: 1, textAlign: "center", fontSize: 16 }}
             >
-              ТДС
+              ТСД
             </Radio.Button>
             <Radio.Button
               value="barcode"
@@ -225,13 +243,13 @@ export const ScanParcelItemsPage: React.FC = () => {
             </Radio.Button>
           </Radio.Group>
         </div>
-        {/* Активный сканер */}
+
         {scanMethod === "zebra" && (
-          <ZebraScanner key={scannedItems.length} onScan={handleScanResult} />
+          <ZebraScanner key={scannedItemsCount} onScan={handleScanResult} />
         )}
 
         {scanMethod === "barcode" && (
-          <BarcodeScanner key={scannedItems.length} onScan={handleScanResult} />
+          <BarcodeScanner key={scannedItemsCount} onScan={handleScanResult} />
         )}
 
         <CameraScanner
@@ -240,11 +258,10 @@ export const ScanParcelItemsPage: React.FC = () => {
           onScan={handleScanResult}
         />
 
-        {/* Статус сканирования */}
         <Typography.Text style={{ fontSize: 16 }}>
           <div style={{ display: "flex", justifyContent: "center" }}>
             {scanMethod === "zebra" && "Наведите сканер на QR-код"}
-            {scanMethod === "barcode" && "Наведите сканер  на штрих-код"}
+            {scanMethod === "barcode" && "Наведите сканер на штрих-код"}
             {scanMethod === "camera" && (
               <Button
                 onClick={() => setIsCameraModalVisible(true)}
@@ -256,16 +273,16 @@ export const ScanParcelItemsPage: React.FC = () => {
           </div>
         </Typography.Text>
 
-        {/* Прогресс и список накладных */}
         <div>
           <Typography.Text strong style={{ marginLeft: 16, fontSize: 16 }}>
-            Прогресс сканирования: {scannedItems.length} из{" "}
-            {allRequiredItems.length} мест
+            Прогресс сканирования: {scannedItemsCount} из{" "}
+            {allRequiredItemsCount} мест
           </Typography.Text>
           <div style={{ margin: 16, marginTop: 0 }}>
             <Progress
               percent={scanProgress}
               status={allItemsScanned ? "success" : "active"}
+              showInfo={false}
             />
           </div>
           <List
@@ -273,16 +290,12 @@ export const ScanParcelItemsPage: React.FC = () => {
             bordered
             dataSource={manifestData?.parcels || []}
             renderItem={(parcel) => {
-              const parcelItems = Array.from(
-                { length: parcel.count },
-                (_, i) => `${parcel.number}%${i + 1}`
-              );
-              const scannedCount = parcelItems.filter((item) =>
-                scannedItems.includes(item)
-              ).length;
+              const scannedPlaces = scannedItems[parcel.number] || [];
+              const scannedCount = scannedPlaces.length;
 
               return (
                 <List.Item
+                  key={parcel.number}
                   style={{
                     backgroundColor:
                       scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
@@ -309,6 +322,7 @@ export const ScanParcelItemsPage: React.FC = () => {
                       status={
                         scannedCount === parcel.count ? "success" : "active"
                       }
+                      showInfo={false}
                     />
                   </Space>
                 </List.Item>
@@ -339,7 +353,7 @@ export const ScanParcelItemsPage: React.FC = () => {
         </div>
       </Space>
       <Modal
-        title="Не все накладные отсканированы!"
+        title="Вы уверены, что хотите подтвердить загрузку?"
         open={confirmModalVisible}
         onOk={submitManifest}
         onCancel={() => setConfirmModalVisible(false)}
@@ -347,30 +361,24 @@ export const ScanParcelItemsPage: React.FC = () => {
         cancelText="Отмена"
         width={600}
       >
-        <Typography.Paragraph>
-          Вы уверены, что хотите подтвердить загрузку?
-        </Typography.Paragraph>
         {manifestData?.parcels && (
           <div style={{ marginTop: 16 }}>
-            <Typography.Text strong>
+            <Typography.Text strong style={{ fontSize: 16 }}>
               Неотсканированные накладные:
             </Typography.Text>
             <List
               size="small"
               bordered
               dataSource={manifestData.parcels.filter((parcel) => {
-                const parcelItems = Array.from(
-                  { length: parcel.count },
-                  (_, i) => `${parcel.number}%${i + 1}`
-                );
-                return !parcelItems.every((item) =>
-                  scannedItems.includes(item)
-                );
+                const scannedPlaces = scannedItems[parcel.number] || [];
+                return scannedPlaces.length < parcel.count;
               })}
               renderItem={(parcel) => (
                 <List.Item>
-                  <Typography.Text>
-                    {parcel.number} - {parcel.count} мест
+                  <Typography.Text style={{ fontSize: 16 }}>
+                    {parcel.number} -{" "}
+                    {parcel.count - (scannedItems[parcel.number]?.length || 0)}{" "}
+                    из {parcel.count} мест
                   </Typography.Text>
                 </List.Item>
               )}
@@ -390,7 +398,6 @@ export const ScanParcelItemsPage: React.FC = () => {
             {errorMessage}
           </Typography.Text>
         </div>
-        <Typography.Paragraph>{errorDescription}</Typography.Paragraph>
       </Modal>
     </div>
   );

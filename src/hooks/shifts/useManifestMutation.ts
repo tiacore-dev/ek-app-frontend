@@ -16,7 +16,14 @@ export const useManifestMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { comment?: string }) =>
+    mutationFn: (data: {
+      comment?: string;
+      scannedItems?: Array<{
+        parcelNumber: string;
+        place: number;
+        scanTime: string;
+      }>;
+    }) =>
       type === "sender"
         ? postManifestLoading(manifestId, data)
         : postManifestUploading(manifestId, data),

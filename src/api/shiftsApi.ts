@@ -73,7 +73,6 @@ export const postManifestLoading = async (
     }
   );
   console.log("[Server Response Data]", response.data);
-
   return response.data;
 };
 
