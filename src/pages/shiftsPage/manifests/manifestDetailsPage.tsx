@@ -9,6 +9,7 @@ import { IListParcels } from "../../../types/shifts";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
 import { MobileParcelsList } from "./components/mobileParcelsList";
 import { DesktopParcelsTable } from "./components/desktopParcelsTable";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 interface ManifestDetail {
   auto: string;
@@ -39,21 +40,9 @@ export const ManifestDetailPage: React.FC = () => {
     queryFn: () => fetchManifestById(manifest_id!),
   });
 
-  // const breadcrumbs = [
-  //   { label: "...", to: "/home" },
-  //   { label: "Рейсы", to: "/shifts" },
-  //   { label: `Рейс`, to: `/shifts/${shift_id}` },
-  //   {
-  //     label: `Манифест ${data?.number}`,
-  //     to: `/shifts/${shift_id}/${data?.id}`,
-  //   },
-  // ];
-
-  // useEffect(() => {
-  //   if (data) {
-  //     dispatch(setBreadcrumbs(breadcrumbs));
-  //   }
-  // }, [data, dispatch, breadcrumbs]);
+  useEffect(() => {
+    dispatch(setBreadcrumbs([{ label: "", to: "/home" }]));
+  }, [dispatch]);
 
   const handleGoBack = useCallback(() => {
     navigate(-1);
@@ -79,10 +68,18 @@ export const ManifestDetailPage: React.FC = () => {
 
   return (
     <div style={{ padding: "20px" }}>
+      <Button
+        type="text"
+        icon={<ArrowLeftOutlined />}
+        onClick={handleGoBack}
+        style={{ marginLeft: -16 }}
+      >
+        Назад
+      </Button>
       {isLoading && <Spin size="large" />}
       {!isError && !isLoading && (
         <div>
-          <Card title={`Детали манифеста ${data?.number}`}>
+          <Card title={`Манифест ${data?.number}`}>
             <Typography.Paragraph>
               <Typography.Text strong>Автомобиль: </Typography.Text>
               {data?.auto || "—"}

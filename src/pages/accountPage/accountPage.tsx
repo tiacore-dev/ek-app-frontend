@@ -9,17 +9,14 @@ export const AccountPage: React.FC = () => {
   const { data: user, isLoading } = useUserQuery();
   const dispatch = useDispatch();
 
-  const breadcrumbs = useMemo(
-    () => [
-      { label: "Главная страница", to: "/home" },
-      { label: "Аккаунт", to: "/account" },
-    ],
-    []
-  );
-
   useEffect(() => {
-    dispatch(setBreadcrumbs(breadcrumbs));
-  }, [dispatch, breadcrumbs]);
+    dispatch(
+      setBreadcrumbs([
+        { label: "Главная страница", to: "/home" },
+        { label: "Аккаунт", to: "/account" },
+      ])
+    );
+  }, [dispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {

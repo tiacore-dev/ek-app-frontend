@@ -20,7 +20,7 @@ export const HomePage: React.FC = () => {
   const lastShiftId = shiftsData?.data?.[0]?.id;
   const { data: shiftData, isLoading } = useShiftQuery(lastShiftId || "");
 
-  const breadcrumbs = useMemo(() => [{ label: " ", to: "/home" }], []);
+  const breadcrumbs = [{ label: " ", to: "/home" }];
 
   useEffect(() => {
     dispatch(setBreadcrumbs(breadcrumbs));

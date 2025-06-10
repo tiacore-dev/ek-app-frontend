@@ -9,7 +9,9 @@ import {
   Progress,
   Radio,
   Modal,
+  Spin,
 } from "antd";
+import { ArrowLeftOutlined, SyncOutlined } from "@ant-design/icons"; // Добавляем иконки
 import { useManifestQuery } from "../../hooks/shifts/useManifestQuery";
 import { useManifestMutation } from "../../hooks/shifts/useManifestMutation";
 import { SoundUtils } from "../../components/soundUtils";
@@ -42,44 +44,16 @@ export const ScanParcelItemsPage: React.FC = () => {
   const soundUtilsRef = React.useRef<SoundUtils>(new SoundUtils());
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const location = useLocation();
-  const { data: manifestData, isLoading } = useManifestQuery(manifestId || "");
+  const {
+    data: manifestData,
+    isLoading,
+    refetch: refetchManifest,
+    isRefetching,
+  } = useManifestQuery(manifestId || "");
   const mutation = useManifestMutation({
     type: "sender",
     manifestId: manifestId || "",
   });
-
-  useEffect(() => {
-    if (!manifestData) return;
-
-    const isFromHome = location.pathname.startsWith("/home");
-    const isFromShifts = location.pathname.startsWith("/shifts");
-
-    const breadcrumbs =
-      // isFromHome
-      //   ?
-      [
-        // { label: "Главная страница", to: "/home" },
-
-        { label: " ", to: "/home" },
-        // { label: `Манифест ${manifestData.number}`, to: "" },
-      ];
-    // : isFromShifts
-    // ? [
-    //     { label: "Главная страница", to: "/home" },
-    //     { label: "Рейсы", to: "/shifts" },
-    //     {
-    //       label: `Рейс`,
-    //       to: `/shifts/${getShiftIdFromPath(location.pathname)}`,
-    //     },
-    //     { label: `Манифест ${manifestData.number}`, to: "" },
-    //   ]
-    // : [
-    //     { label: "Главная страница", to: "/home" },
-    //     { label: `Манифест ${manifestData.number}`, to: "" },
-    //   ];
-
-    dispatch(setBreadcrumbs(breadcrumbs));
-  }, []);
 
   // Загрузка сохраненных данных при монтировании
   useEffect(() => {
@@ -88,6 +62,10 @@ export const ScanParcelItemsPage: React.FC = () => {
       setScannedItems(savedItems);
     }
   }, [manifestId]);
+
+  useEffect(() => {
+    dispatch(setBreadcrumbs([{ label: "", to: "/home" }]));
+  }, [dispatch]);
 
   // Обновляем данные при изменении manifestData
   useEffect(() => {
@@ -236,6 +214,14 @@ export const ScanParcelItemsPage: React.FC = () => {
     ManifestStorage.clearScannedItems(manifestId!);
   };
 
+  const handleRefresh = () => {
+    refetchManifest();
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   if (!manifestId) {
     return null;
   }
@@ -243,6 +229,34 @@ export const ScanParcelItemsPage: React.FC = () => {
   return (
     <div>
       {contextHolder}
+      {/* Добавляем кнопки навигации */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 16,
+        }}
+      >
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={handleGoBack}
+          style={{ fontSize: 16 }}
+        >
+          Назад
+        </Button>
+
+        <Button
+          type="text"
+          icon={<SyncOutlined spin={isRefetching} />}
+          onClick={handleRefresh}
+          disabled={isRefetching}
+          style={{ fontSize: 16 }}
+        >
+          {isRefetching ? "Обновление..." : "Обновить"}
+        </Button>
+      </div>
+
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <div
           style={{

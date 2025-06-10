@@ -17,20 +17,15 @@ export const ShiftDetailPage: React.FC = () => {
 
   const { data, isLoading, isError } = useShiftQuery(shift_id!);
 
-  const breadcrumbs = useMemo(
-    () => [
-      { label: "Главная страница", to: "/home" },
-      { label: "Рейсы", to: "/shifts" },
-      { label: `Рейс`, to: `/shifts/${shift_id}` },
-    ],
-    [shift_id]
-  );
-
   useEffect(() => {
-    if (data) {
-      dispatch(setBreadcrumbs(breadcrumbs));
-    }
-  }, [data, dispatch, breadcrumbs]);
+    dispatch(
+      setBreadcrumbs([
+        { label: "Главная страница", to: "/home" },
+        { label: "Рейсы", to: "/shifts" },
+        { label: `Рейс`, to: `/shifts/${shift_id}` },
+      ])
+    );
+  }, [dispatch, shift_id]);
 
   const manifestsTable = useMemo(
     () =>
