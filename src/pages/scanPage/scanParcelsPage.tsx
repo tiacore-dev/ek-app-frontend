@@ -68,8 +68,18 @@ export const ScanParcelItemsPage: React.FC = () => {
   // Загрузка сохраненных данных при монтировании
   useEffect(() => {
     if (manifestId) {
-      const savedItems = ManifestStorage.getScannedItems(manifestId);
-      setScannedItems(savedItems);
+      try {
+        const savedItems = ManifestStorage.getScannedItems(manifestId);
+        if (Object.keys(savedItems).length > 0) {
+          setScannedItems(savedItems);
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки данных:", error);
+        notification.error({
+          message: "Ошибка загрузки сохраненных данных",
+          description: "Попробуйте обновить страницу",
+        });
+      }
     }
   }, [manifestId]);
 
@@ -105,20 +115,24 @@ export const ScanParcelItemsPage: React.FC = () => {
   // Обновляем данные при изменении manifestData
   useEffect(() => {
     if (manifestData && manifestId) {
-      const savedItems = ManifestStorage.getScannedItems(manifestId);
+      try {
+        const savedItems = ManifestStorage.getScannedItems(manifestId);
 
-      const filteredItems = Object.keys(savedItems).reduce(
-        (acc, parcelNumber) => {
-          if (manifestData.parcels?.some((p) => p.number === parcelNumber)) {
-            acc[parcelNumber] = savedItems[parcelNumber];
-          }
-          return acc;
-        },
-        {} as ScannedParcels
-      );
+        const filteredItems = Object.keys(savedItems).reduce(
+          (acc, parcelNumber) => {
+            if (manifestData.parcels?.some((p) => p.number === parcelNumber)) {
+              acc[parcelNumber] = savedItems[parcelNumber];
+            }
+            return acc;
+          },
+          {} as ScannedParcels
+        );
 
-      setScannedItems(filteredItems);
-      ManifestStorage.saveScannedItems(manifestId, filteredItems);
+        setScannedItems(filteredItems);
+        ManifestStorage.saveScannedItems(manifestId, filteredItems);
+      } catch (error) {
+        console.error("Ошибка обновления данных:", error);
+      }
     }
   }, [manifestData, manifestId]);
 
@@ -196,13 +210,20 @@ export const ScanParcelItemsPage: React.FC = () => {
       };
 
       setScannedItems(newItems);
-      ManifestStorage.saveScannedItems(manifestId!, newItems);
-      soundUtilsRef.current.playBeepSound("success");
-      api.success({
-        message: `Место ${parcelNumber}%${place} отсканировано`,
-        placement: "topRight",
-        duration: 2,
-      });
+      try {
+        ManifestStorage.saveScannedItems(manifestId!, newItems);
+        soundUtilsRef.current.playBeepSound("success");
+        api.success({
+          message: `Место ${parcelNumber}%${place} отсканировано`,
+          placement: "topRight",
+          duration: 2,
+        });
+      } catch (error) {
+        console.error("Ошибка сохранения:", error);
+        soundUtilsRef.current.playBeepSound("error");
+        setErrorMessage("Ошибка сохранения данных. Попробуйте еще раз.");
+        setErrorModalVisible(true);
+      }
     } else {
       setErrorMessage(`Место ${parcelNumber}%${place} уже было отсканировано`);
       setErrorModalVisible(true);
@@ -239,6 +260,13 @@ export const ScanParcelItemsPage: React.FC = () => {
         onSuccess: () => {
           navigate(-1);
         },
+        onError: (error) => {
+          console.error("Ошибка отправки данных:", error);
+          notification.error({
+            message: "Ошибка отправки данных",
+            description: "Попробуйте еще раз",
+          });
+        },
       }
     );
     setConfirmModalVisible(false);
@@ -246,7 +274,17 @@ export const ScanParcelItemsPage: React.FC = () => {
 
   const clearResult = () => {
     setScannedItems({});
-    ManifestStorage.clearScannedItems(manifestId!);
+    try {
+      ManifestStorage.clearScannedItems(manifestId!);
+      notification.success({
+        message: "Данные сканирования очищены",
+      });
+    } catch (error) {
+      console.error("Ошибка очистки данных:", error);
+      notification.error({
+        message: "Ошибка очистки данных",
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -280,7 +318,6 @@ export const ScanParcelItemsPage: React.FC = () => {
       {contextHolder}
       <div ref={topRef} />
 
-      {/* Добавляем кнопки навигации */}
       <div
         style={{
           display: "flex",
@@ -455,7 +492,6 @@ export const ScanParcelItemsPage: React.FC = () => {
 
       <div ref={bottomRef} style={{ paddingBottom: 24 }} />
 
-      {/* Кнопки прокрутки */}
       {showScrollToBottom && (
         <FloatButton
           icon={<ArrowDownOutlined />}
