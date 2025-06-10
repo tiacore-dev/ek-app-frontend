@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -16,8 +16,8 @@ import { AccountPage } from "./pages/accountPage/accountPage";
 import { ShiftsPage } from "./pages/shiftsPage/shiftsPage";
 import { ShiftDetailPage } from "./pages/shiftsPage/shiftDetailPage/shiftDetailPage";
 import { ManifestDetailPage } from "./pages/shiftsPage/manifests/manifestDetailsPage";
-import { WarehouseReceivePage } from "./pages/warehousePage/receivePage/receivePage"; //
-import { WarehouseShipPage } from "./pages/warehousePage/shipPage/shipPage"; //
+import { WarehouseReceivePage } from "./pages/warehousePage/receivePage/receivePage";
+import { WarehouseShipPage } from "./pages/warehousePage/shipPage/shipPage";
 import "antd/dist/reset.css";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -53,14 +53,12 @@ const App: React.FC = () => {
                   path="/scan-parcels/:manifest_id"
                   element={<ScanParcelItemsPage />}
                 />
-
                 <Route path="/shifts" element={<ShiftsPage />} />
                 <Route path="/shifts/:shift_id" element={<ShiftDetailPage />} />
                 <Route
                   path="/shifts/:shift_id/:manifest_id"
                   element={<ManifestDetailPage />}
                 />
-
                 <Route
                   path="/warehouse/receive"
                   element={<WarehouseReceivePage />}
