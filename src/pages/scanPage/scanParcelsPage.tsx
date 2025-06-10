@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
@@ -9,9 +9,14 @@ import {
   Progress,
   Radio,
   Modal,
-  Spin,
+  FloatButton,
 } from "antd";
-import { ArrowLeftOutlined, SyncOutlined } from "@ant-design/icons"; // Добавляем иконки
+import {
+  ArrowLeftOutlined,
+  SyncOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+} from "@ant-design/icons";
 import { useManifestQuery } from "../../hooks/shifts/useManifestQuery";
 import { useManifestMutation } from "../../hooks/shifts/useManifestMutation";
 import { SoundUtils } from "../../components/soundUtils";
@@ -43,6 +48,11 @@ export const ScanParcelItemsPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const soundUtilsRef = React.useRef<SoundUtils>(new SoundUtils());
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(true);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const {
     data: manifestData,
@@ -66,6 +76,31 @@ export const ScanParcelItemsPage: React.FC = () => {
   useEffect(() => {
     dispatch(setBreadcrumbs([{ label: "", to: "/home" }]));
   }, [dispatch]);
+
+  useEffect(() => {
+    const checkScrollPosition = () => {
+      if (containerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 50;
+        const isAtTop = scrollTop <= 50;
+
+        setShowScrollToBottom(!isAtBottom);
+        setShowScrollToTop(!isAtTop && scrollTop > 0);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("scroll", checkScrollPosition);
+      checkScrollPosition();
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", checkScrollPosition);
+      }
+    };
+  }, []);
 
   // Обновляем данные при изменении manifestData
   useEffect(() => {
@@ -222,13 +257,29 @@ export const ScanParcelItemsPage: React.FC = () => {
     navigate(-1);
   };
 
+  const scrollToTop = () => {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  };
+
   if (!manifestId) {
     return null;
   }
 
   return (
-    <div>
+    <div
+      ref={containerRef}
+      style={{
+        height: `calc(100vh - var(--navbar-height))`,
+        overflowY: "auto",
+      }}
+    >
       {contextHolder}
+      <div ref={topRef} />
+
       {/* Добавляем кнопки навигации */}
       <div
         style={{
@@ -401,6 +452,28 @@ export const ScanParcelItemsPage: React.FC = () => {
           </Button>
         </div>
       </Space>
+
+      <div ref={bottomRef} style={{ paddingBottom: 24 }} />
+
+      {/* Кнопки прокрутки */}
+      {showScrollToBottom && (
+        <FloatButton
+          icon={<ArrowDownOutlined />}
+          onClick={scrollToBottom}
+          style={{ right: 24, bottom: 24 }}
+          tooltip="Вниз"
+        />
+      )}
+
+      {showScrollToTop && (
+        <FloatButton
+          icon={<ArrowUpOutlined />}
+          onClick={scrollToTop}
+          style={{ right: 24, top: 80 }}
+          tooltip="Вверх"
+        />
+      )}
+
       <Modal
         title="Вы уверены, что хотите подтвердить загрузку?"
         open={confirmModalVisible}
