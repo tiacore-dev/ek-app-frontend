@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
   notification,
@@ -10,7 +10,6 @@ import {
   Radio,
   Modal,
   FloatButton,
-  Spin,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -47,72 +46,56 @@ export const ScanParcelItemsPage: React.FC = () => {
   const [isCameraModalVisible, setIsCameraModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const soundUtilsRef = useRef<SoundUtils>(new SoundUtils());
+  const soundUtilsRef = React.useRef<SoundUtils>(new SoundUtils());
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [showScrollToBottom, setShowScrollToTop] = useState(false);
-  const [showScrollToTop, setShowScrollToBottom] = useState(true);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(true);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [storageError, setStorageError] = useState(false);
-
+  const location = useLocation();
   const {
     data: manifestData,
     isLoading,
     refetch: refetchManifest,
     isRefetching,
   } = useManifestQuery(manifestId || "");
-
   const mutation = useManifestMutation({
     type: "sender",
     manifestId: manifestId || "",
   });
 
-  // Инициализация данных
+  // Загрузка сохраненных данных при монтировании
   useEffect(() => {
-    if (!manifestId) return;
-
-    const loadData = async () => {
+    if (manifestId) {
       try {
         const savedItems = ManifestStorage.getScannedItems(manifestId);
-        if (savedItems) {
+        if (Object.keys(savedItems).length > 0) {
           setScannedItems(savedItems);
         }
-        setIsInitialized(true);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
-        setStorageError(true);
-        setErrorMessage(
-          "Ошибка загрузки сохраненных данных. Пожалуйста, обновите страницу."
-        );
-        setErrorModalVisible(true);
+        notification.error({
+          message: "Ошибка загрузки сохраненных данных",
+          description: "Попробуйте обновить страницу",
+        });
       }
-    };
+    }
+  }, [manifestId]);
 
-    loadData();
+  useEffect(() => {
     dispatch(setBreadcrumbs([{ label: "", to: "/home" }]));
+  }, [dispatch]);
 
-    // Синхронизация при возврате на страницу
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        ManifestStorage.syncStorages(manifestId);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [manifestId, dispatch]);
-
-  // Прокрутка
   useEffect(() => {
     const checkScrollPosition = () => {
       if (containerRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-        setShowScrollToBottom(scrollTop + clientHeight < scrollHeight - 50);
-        setShowScrollToTop(scrollTop > 50);
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 50;
+        const isAtTop = scrollTop <= 50;
+
+        setShowScrollToBottom(!isAtBottom);
+        setShowScrollToTop(!isAtTop && scrollTop > 0);
       }
     };
 
@@ -129,11 +112,12 @@ export const ScanParcelItemsPage: React.FC = () => {
     };
   }, []);
 
-  // Обновление данных при изменении манифеста
+  // Обновляем данные при изменении manifestData
   useEffect(() => {
-    if (manifestData && manifestId && isInitialized) {
+    if (manifestData && manifestId) {
       try {
         const savedItems = ManifestStorage.getScannedItems(manifestId);
+
         const filteredItems = Object.keys(savedItems).reduce(
           (acc, parcelNumber) => {
             if (manifestData.parcels?.some((p) => p.number === parcelNumber)) {
@@ -150,73 +134,102 @@ export const ScanParcelItemsPage: React.FC = () => {
         console.error("Ошибка обновления данных:", error);
       }
     }
-  }, [manifestData, manifestId, isInitialized]);
+  }, [manifestData, manifestId]);
+
+  const getShiftIdFromPath = (path: string) => {
+    const parts = path.split("/");
+    const shiftIndex = parts.indexOf("shifts") + 1;
+    return shiftIndex > 0 && shiftIndex < parts.length ? parts[shiftIndex] : "";
+  };
+
+  const allRequiredItemsCount =
+    manifestData?.parcels?.reduce((sum, parcel) => sum + parcel.count, 0) || 0;
+
+  const scannedItemsCount = Object.values(scannedItems).reduce(
+    (sum, items) => sum + items.length,
+    0
+  );
+
+  const allItemsScanned =
+    manifestData?.parcels?.every((parcel) => {
+      const scannedPlaces = scannedItems[parcel.number] || [];
+      return scannedPlaces.length === parcel.count;
+    }) || false;
+
+  const scanProgress =
+    allRequiredItemsCount > 0
+      ? Math.round((scannedItemsCount / allRequiredItemsCount) * 100)
+      : 0;
 
   const handleScanResult = (result: string) => {
-    if (!manifestId || !isInitialized) return;
-
     notification.destroy();
+
     const [parcelNumber, placeStr] = result.includes("%")
       ? result.split("%")
       : [result, "1"];
     const place = parseInt(placeStr);
 
-    // Проверка наличия в манифесте
-    if (!manifestData?.parcels?.some((p) => p.number === parcelNumber)) {
-      setErrorMessage(`Накладная ${parcelNumber} не найдена`);
+    const isParcelInManifest = manifestData?.parcels?.some(
+      (parcel) => parcel.number === parcelNumber
+    );
+
+    if (!isParcelInManifest) {
+      setErrorMessage(`Накладная ${parcelNumber} не найдена в манифесте`);
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    // Проверка дубликатов
-    if (scannedItems[parcelNumber]?.some((item) => item.place === place)) {
-      setErrorMessage(`Место ${parcelNumber}%${place} уже отсканировано`);
+    const targetParcel = manifestData?.parcels?.find(
+      (parcel) => parcel.number === parcelNumber
+    );
+
+    if (targetParcel && place > targetParcel.count) {
+      setErrorMessage(
+        `Ошибка: у накладной ${parcelNumber} только ${targetParcel.count} мест`
+      );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const newItems = {
-      ...scannedItems,
-      [parcelNumber]: [
-        ...(scannedItems[parcelNumber] || []),
-        { place, date: new Date().toISOString() },
-      ],
-    };
+    const alreadyScanned = scannedItems[parcelNumber]?.some(
+      (item) => item.place === place
+    );
 
-    setScannedItems(newItems);
-    try {
-      ManifestStorage.saveScannedItems(manifestId, newItems);
-      soundUtilsRef.current.playBeepSound("success");
-      api.success({
-        message: `Место ${parcelNumber}%${place} отсканировано`,
-        placement: "topRight",
-        duration: 2,
-      });
-    } catch (error) {
-      console.error("Ошибка сохранения:", error);
-      setStorageError(true);
-      soundUtilsRef.current.playBeepSound("error");
-      setErrorMessage("Ошибка сохранения данных");
+    if (!alreadyScanned) {
+      const newItems = {
+        ...scannedItems,
+        [parcelNumber]: [
+          ...(scannedItems[parcelNumber] || []),
+          {
+            place,
+            date: new Date().toISOString(),
+          },
+        ],
+      };
+
+      setScannedItems(newItems);
+      try {
+        ManifestStorage.saveScannedItems(manifestId!, newItems);
+        soundUtilsRef.current.playBeepSound("success");
+        api.success({
+          message: `Место ${parcelNumber}%${place} отсканировано`,
+          placement: "topRight",
+          duration: 2,
+        });
+      } catch (error) {
+        console.error("Ошибка сохранения:", error);
+        soundUtilsRef.current.playBeepSound("error");
+        setErrorMessage("Ошибка сохранения данных. Попробуйте еще раз.");
+        setErrorModalVisible(true);
+      }
+    } else {
+      setErrorMessage(`Место ${parcelNumber}%${place} уже было отсканировано`);
       setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error");
     }
   };
-
-  const allRequiredItemsCount =
-    manifestData?.parcels?.reduce((sum, p) => sum + p.count, 0) || 0;
-  const scannedItemsCount = Object.values(scannedItems).reduce(
-    (sum, items) => sum + items.length,
-    0
-  );
-  const scanProgress =
-    allRequiredItemsCount > 0
-      ? Math.round((scannedItemsCount / allRequiredItemsCount) * 100)
-      : 0;
-  const allItemsScanned =
-    manifestData?.parcels?.every(
-      (p) => (scannedItems[p.number]?.length || 0) === p.count
-    ) || false;
 
   const handleSubmit = () => {
     if (!allItemsScanned) {
@@ -228,9 +241,9 @@ export const ScanParcelItemsPage: React.FC = () => {
 
   const submitManifest = () => {
     const scannedItemsArray = Object.entries(scannedItems).flatMap(
-      ([num, items]) =>
+      ([parcelNumber, items]) =>
         items.map((item) => ({
-          parcelNumber: num,
+          parcelNumber,
           place: item.place,
           scanTime: item.date,
         }))
@@ -239,15 +252,18 @@ export const ScanParcelItemsPage: React.FC = () => {
     mutation.mutate(
       {
         comment: allItemsScanned
-          ? "Все места отсканированы"
-          : `Отсканировано ${scannedItemsCount} из ${allRequiredItemsCount}`,
+          ? "Все места накладных отсканированы"
+          : `Отсканировано ${scannedItemsCount} из ${allRequiredItemsCount} мест`,
         scannedItems: scannedItemsArray,
       },
       {
-        onSuccess: () => navigate(-1),
-        onError: () => {
+        onSuccess: () => {
+          navigate(-1);
+        },
+        onError: (error) => {
+          console.error("Ошибка отправки данных:", error);
           notification.error({
-            message: "Ошибка отправки",
+            message: "Ошибка отправки данных",
             description: "Попробуйте еще раз",
           });
         },
@@ -260,185 +276,231 @@ export const ScanParcelItemsPage: React.FC = () => {
     setScannedItems({});
     try {
       ManifestStorage.clearScannedItems(manifestId!);
-      notification.success({ message: "Данные очищены" });
+      notification.success({
+        message: "Данные сканирования очищены",
+      });
     } catch (error) {
-      console.error("Ошибка очистки:", error);
-      notification.error({ message: "Ошибка очистки данных" });
+      console.error("Ошибка очистки данных:", error);
+      notification.error({
+        message: "Ошибка очистки данных",
+      });
     }
   };
 
-  const handleRefresh = () => refetchManifest();
-  const handleGoBack = () => navigate(-1);
-  const scrollToTop = () =>
-    topRef.current?.scrollIntoView({ behavior: "smooth" });
-  const scrollToBottom = () =>
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleRefresh = () => {
+    refetchManifest();
+  };
 
-  if (!isInitialized || !manifestId) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <Spin size="large" />
-      </div>
-    );
-  }
+  const handleGoBack = () => {
+    navigate(-1);
+  };
 
-  if (storageError) {
-    return (
-      <div style={{ padding: 16 }}>
-        <Typography.Title level={4} style={{ color: "#ff4d4f" }}>
-          Ошибка загрузки данных
-        </Typography.Title>
-        <Typography.Paragraph>
-          Не удалось загрузить сохраненные данные сканирования.
-        </Typography.Paragraph>
-        <Button type="primary" onClick={() => window.location.reload()}>
-          Обновить страницу
-        </Button>
-      </div>
-    );
+  const scrollToTop = () => {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  };
+
+  if (!manifestId) {
+    return null;
   }
 
   return (
     <div
       ref={containerRef}
       style={{
-        height: "100vh",
+        height: `calc(100vh - var(--navbar-height))`,
         overflowY: "auto",
-        paddingBottom: 60,
       }}
     >
       {contextHolder}
       <div ref={topRef} />
 
-      <div style={{ padding: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={handleGoBack}
-            style={{ marginBottom: 16 }}
-          >
-            Назад
-          </Button>
-          <Button
-            icon={<SyncOutlined spin={isRefetching} />}
-            onClick={handleRefresh}
-            disabled={isRefetching}
-          >
-            Обновить
-          </Button>
-        </div>
-
-        <Radio.Group
-          value={scanMethod}
-          onChange={(e) => setScanMethod(e.target.value)}
-          buttonStyle="solid"
-          style={{ width: "100%", marginBottom: 16 }}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 16,
+        }}
+      >
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={handleGoBack}
+          style={{ fontSize: 16 }}
         >
-          <Radio.Button value="zebra" style={{ textAlign: "center", flex: 1 }}>
-            ТСД
-          </Radio.Button>
-          <Radio.Button
-            value="barcode"
-            style={{ textAlign: "center", flex: 1 }}
-          >
-            Штрих-код
-          </Radio.Button>
-          <Radio.Button value="camera" style={{ textAlign: "center", flex: 1 }}>
-            Камера
-          </Radio.Button>
-        </Radio.Group>
+          Назад
+        </Button>
 
-        {scanMethod === "camera" && (
-          <Button
-            type="primary"
-            block
-            size="large"
-            onClick={() => setIsCameraModalVisible(true)}
-            style={{ marginBottom: 16 }}
-          >
-            Запустить сканирование
-          </Button>
-        )}
-
-        <div style={{ marginBottom: 16 }}>
-          <Typography.Text strong>
-            Прогресс: {scannedItemsCount} / {allRequiredItemsCount}
-          </Typography.Text>
-          <Progress
-            percent={scanProgress}
-            status={allItemsScanned ? "success" : "active"}
-            showInfo={false}
-          />
-        </div>
-
-        <List
-          bordered
-          dataSource={manifestData?.parcels || []}
-          renderItem={(parcel) => {
-            const scannedCount = scannedItems[parcel.number]?.length || 0;
-            return (
-              <List.Item
-                style={{
-                  backgroundColor:
-                    scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
-                }}
-              >
-                <div style={{ width: "100%" }}>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Typography.Text strong>{parcel.number}</Typography.Text>
-                    <Typography.Text>
-                      {scannedCount} / {parcel.count}
-                    </Typography.Text>
-                  </div>
-                  <Progress
-                    percent={Math.round((scannedCount / parcel.count) * 100)}
-                    status={
-                      scannedCount === parcel.count ? "success" : "active"
-                    }
-                    showInfo={false}
-                  />
-                </div>
-              </List.Item>
-            );
-          }}
-        />
-
-        <div style={{ marginTop: 16 }}>
-          <Button
-            type="primary"
-            block
-            size="large"
-            onClick={handleSubmit}
-            loading={mutation.isPending}
-            style={{ marginBottom: 8 }}
-          >
-            Подтвердить
-          </Button>
-          <Button block size="large" onClick={clearResult}>
-            Сбросить
-          </Button>
-        </div>
+        <Button
+          type="text"
+          icon={<SyncOutlined spin={isRefetching} />}
+          onClick={handleRefresh}
+          disabled={isRefetching}
+          style={{ fontSize: 16 }}
+        >
+          {isRefetching ? "Обновление..." : "Обновить"}
+        </Button>
       </div>
 
-      <div ref={bottomRef} />
+      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: 16,
+            height: 20,
+          }}
+        >
+          <Radio.Group
+            value={scanMethod}
+            onChange={(e) => setScanMethod(e.target.value)}
+            buttonStyle="solid"
+            style={{ display: "flex", width: "100%", maxWidth: 400 }}
+          >
+            <Radio.Button
+              value="zebra"
+              style={{ flex: 1, textAlign: "center", fontSize: 16 }}
+            >
+              ТСД
+            </Radio.Button>
+            <Radio.Button
+              value="barcode"
+              style={{ flex: 1, textAlign: "center", fontSize: 16 }}
+            >
+              Штрих-код
+            </Radio.Button>
+            <Radio.Button
+              value="camera"
+              style={{ flex: 1, textAlign: "center", fontSize: 16 }}
+            >
+              Камера
+            </Radio.Button>
+          </Radio.Group>
+        </div>
+
+        {scanMethod === "zebra" && (
+          <ZebraScanner key={scannedItemsCount} onScan={handleScanResult} />
+        )}
+
+        {scanMethod === "barcode" && (
+          <BarcodeScanner key={scannedItemsCount} onScan={handleScanResult} />
+        )}
+
+        <CameraScanner
+          isOpen={isCameraModalVisible}
+          onClose={() => setIsCameraModalVisible(false)}
+          onScan={handleScanResult}
+        />
+
+        <Typography.Text style={{ fontSize: 16 }}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {scanMethod === "zebra" && "Наведите сканер на QR-код"}
+            {scanMethod === "barcode" && "Наведите сканер на штрих-код"}
+            {scanMethod === "camera" && (
+              <Button
+                onClick={() => setIsCameraModalVisible(true)}
+                style={{ fontSize: 16 }}
+              >
+                Запустить камеру
+              </Button>
+            )}
+          </div>
+        </Typography.Text>
+
+        <div>
+          <Typography.Text strong style={{ marginLeft: 16, fontSize: 16 }}>
+            Прогресс сканирования: {scannedItemsCount} из{" "}
+            {allRequiredItemsCount} мест
+          </Typography.Text>
+          <div style={{ margin: 16, marginTop: 0 }}>
+            <Progress
+              percent={scanProgress}
+              status={allItemsScanned ? "success" : "active"}
+              showInfo={false}
+            />
+          </div>
+          <List
+            style={{ marginLeft: 4, marginRight: 4 }}
+            bordered
+            dataSource={manifestData?.parcels || []}
+            renderItem={(parcel) => {
+              const scannedPlaces = scannedItems[parcel.number] || [];
+              const scannedCount = scannedPlaces.length;
+
+              return (
+                <List.Item
+                  key={parcel.number}
+                  style={{
+                    backgroundColor:
+                      scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
+                  }}
+                >
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography.Text strong style={{ fontSize: 16 }}>
+                        {parcel.number}
+                      </Typography.Text>
+                      <Typography.Text strong style={{ fontSize: 16 }}>
+                        {scannedCount} из {parcel.count} мест
+                      </Typography.Text>
+                    </div>
+
+                    <Progress
+                      percent={Math.round((scannedCount / parcel.count) * 100)}
+                      style={{ width: "100%" }}
+                      status={
+                        scannedCount === parcel.count ? "success" : "active"
+                      }
+                      showInfo={false}
+                    />
+                  </Space>
+                </List.Item>
+              );
+            }}
+          />
+        </div>
+        <div style={{ margin: 16, marginTop: 0 }}>
+          <Button
+            size="large"
+            type="primary"
+            onClick={handleSubmit}
+            loading={mutation.isPending}
+            block
+            style={{ marginBottom: 8, fontSize: 16 }}
+          >
+            Подтвердить загрузку манифеста
+          </Button>
+
+          <Button
+            size="large"
+            onClick={clearResult}
+            block
+            style={{ fontSize: 16 }}
+          >
+            Сбросить сканер
+          </Button>
+        </div>
+      </Space>
+
+      <div ref={bottomRef} style={{ paddingBottom: 24 }} />
 
       {showScrollToBottom && (
         <FloatButton
           icon={<ArrowDownOutlined />}
           onClick={scrollToBottom}
-          style={{ right: 24, bottom: 80 }}
+          style={{ right: 24, bottom: 24 }}
           tooltip="Вниз"
         />
       )}
+
       {showScrollToTop && (
         <FloatButton
           icon={<ArrowUpOutlined />}
@@ -448,32 +510,52 @@ export const ScanParcelItemsPage: React.FC = () => {
         />
       )}
 
-      <CameraScanner
-        isOpen={isCameraModalVisible}
-        onClose={() => setIsCameraModalVisible(false)}
-        onScan={handleScanResult}
-      />
-
       <Modal
-        title="Подтверждение"
+        title="Вы уверены, что хотите подтвердить загрузку?"
         open={confirmModalVisible}
         onOk={submitManifest}
         onCancel={() => setConfirmModalVisible(false)}
         okText="Подтвердить"
         cancelText="Отмена"
+        width={600}
       >
-        <Typography.Paragraph>
-          Не все места отсканированы. Вы уверены, что хотите продолжить?
-        </Typography.Paragraph>
+        {manifestData?.parcels && (
+          <div style={{ marginTop: 16 }}>
+            <Typography.Text strong style={{ fontSize: 16 }}>
+              Неотсканированные накладные:
+            </Typography.Text>
+            <List
+              size="small"
+              bordered
+              dataSource={manifestData.parcels.filter((parcel) => {
+                const scannedPlaces = scannedItems[parcel.number] || [];
+                return scannedPlaces.length < parcel.count;
+              })}
+              renderItem={(parcel) => (
+                <List.Item>
+                  <Typography.Text style={{ fontSize: 16 }}>
+                    {parcel.number} -{" "}
+                    {parcel.count - (scannedItems[parcel.number]?.length || 0)}{" "}
+                    из {parcel.count} мест
+                  </Typography.Text>
+                </List.Item>
+              )}
+            />
+          </div>
+        )}
       </Modal>
-
       <Modal
         open={errorModalVisible}
         onOk={() => setErrorModalVisible(false)}
         onCancel={() => setErrorModalVisible(false)}
         cancelButtonProps={{ style: { display: "none" } }}
+        width={600}
       >
-        <Typography.Text>{errorMessage}</Typography.Text>
+        <div style={{ marginBottom: 24 }}>
+          <Typography.Text strong style={{ fontSize: 16 }}>
+            {errorMessage}
+          </Typography.Text>
+        </div>
       </Modal>
     </div>
   );
