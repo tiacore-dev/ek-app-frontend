@@ -1,4 +1,4 @@
-import { Button, Modal, Form, Input, message } from "antd";
+import { Button, Modal, Form, Input, message, Typography } from "antd";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -6,6 +6,7 @@ import {
   postManifestUploading,
 } from "../../../../api/shiftsApi";
 import { Link } from "react-router-dom";
+import ManifestStorage from "../../manifests/manifestStorage";
 
 interface ManifestActionsProps {
   type: "sender" | "recipient";
@@ -23,7 +24,14 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
   const queryClient = useQueryClient();
 
   const canLoad = !status || status === "Готов к загрузке";
-  const canUnload = status === "Манифест в пути"; // Изменили условие - теперь только при точном совпадении
+  const canUnload = status === "Манифест в пути";
+
+  // Получаем данные о сканировании для этого манифеста
+  const scannedItems = ManifestStorage.getScannedItems(manifestId);
+  const scannedCount = Object.values(scannedItems).reduce(
+    (sum, items) => sum + items.length,
+    0
+  );
 
   const mutation = useMutation({
     mutationFn: (data: { comment?: string }) =>
@@ -69,7 +77,6 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
     }
   };
 
-  // Определяем класс и стиль кнопки в зависимости от типа и статуса
   const getButtonProps = () => {
     if (type === "sender") {
       return {
@@ -86,23 +93,29 @@ export const ManifestActions: React.FC<ManifestActionsProps> = ({
     }
   };
 
+  const renderScanProgress = () => {
+    if (type !== "sender") return null;
+
+    return (
+      <Typography.Text
+        type="secondary"
+        style={{ fontSize: 12, display: "block", marginTop: 4 }}
+      >
+        Отсканировано: {scannedCount}
+      </Typography.Text>
+    );
+  };
+
   return (
     <div onClick={(e) => e.stopPropagation()}>
       {type === "sender" && (
         <>
-          {/* <Button
-            size="small"
-            onClick={showModal}
-            {...getButtonProps()}
-            style={{ marginBottom: 8 }}
-          >
-            Загружено
-          </Button> */}
           <Link to={`/scan-parcels/${manifestId}`}>
             <Button type="default" size="small" {...getButtonProps()}>
               Загрузить
             </Button>
           </Link>
+          {renderScanProgress()}
         </>
       )}
       {type === "recipient" && (

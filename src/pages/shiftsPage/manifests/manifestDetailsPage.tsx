@@ -39,24 +39,21 @@ export const ManifestDetailPage: React.FC = () => {
     queryFn: () => fetchManifestById(manifest_id!),
   });
 
-  const breadcrumbs = useMemo(
-    () => [
-      { label: "...", to: "/home" },
-      { label: "Рейсы", to: "/shifts" },
-      { label: `Рейс`, to: `/shifts/${shift_id}` },
-      {
-        label: `Манифест ${data?.number}`,
-        to: `/shifts/${shift_id}/${data?.id}`,
-      },
-    ],
-    [data?.number, data?.id, shift_id]
-  );
+  // const breadcrumbs = [
+  //   { label: "...", to: "/home" },
+  //   { label: "Рейсы", to: "/shifts" },
+  //   { label: `Рейс`, to: `/shifts/${shift_id}` },
+  //   {
+  //     label: `Манифест ${data?.number}`,
+  //     to: `/shifts/${shift_id}/${data?.id}`,
+  //   },
+  // ];
 
-  useEffect(() => {
-    if (data) {
-      dispatch(setBreadcrumbs(breadcrumbs));
-    }
-  }, [data, dispatch, breadcrumbs]);
+  // useEffect(() => {
+  //   if (data) {
+  //     dispatch(setBreadcrumbs(breadcrumbs));
+  //   }
+  // }, [data, dispatch, breadcrumbs]);
 
   const handleGoBack = useCallback(() => {
     navigate(-1);

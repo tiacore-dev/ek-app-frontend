@@ -18,6 +18,7 @@ import { BarcodeScanner } from "./barcodeScanner";
 import { CameraScanner } from "./cameraScanner";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
+import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
 
@@ -53,28 +54,60 @@ export const ScanParcelItemsPage: React.FC = () => {
     const isFromHome = location.pathname.startsWith("/home");
     const isFromShifts = location.pathname.startsWith("/shifts");
 
-    const breadcrumbs = isFromHome
-      ? [
-          { label: "Главная страница", to: "/home" },
-          { label: `Манифест ${manifestData.number}`, to: "" },
-        ]
-      : isFromShifts
-      ? [
-          { label: "Главная страница", to: "/home" },
-          { label: "Рейсы", to: "/shifts" },
-          {
-            label: `Рейс`,
-            to: `/shifts/${getShiftIdFromPath(location.pathname)}`,
-          },
-          { label: `Манифест ${manifestData.number}`, to: "" },
-        ]
-      : [
-          { label: "Главная страница", to: "/home" },
-          { label: `Манифест ${manifestData.number}`, to: "" },
-        ];
+    const breadcrumbs =
+      // isFromHome
+      //   ?
+      [
+        // { label: "Главная страница", to: "/home" },
+
+        { label: " ", to: "/home" },
+        // { label: `Манифест ${manifestData.number}`, to: "" },
+      ];
+    // : isFromShifts
+    // ? [
+    //     { label: "Главная страница", to: "/home" },
+    //     { label: "Рейсы", to: "/shifts" },
+    //     {
+    //       label: `Рейс`,
+    //       to: `/shifts/${getShiftIdFromPath(location.pathname)}`,
+    //     },
+    //     { label: `Манифест ${manifestData.number}`, to: "" },
+    //   ]
+    // : [
+    //     { label: "Главная страница", to: "/home" },
+    //     { label: `Манифест ${manifestData.number}`, to: "" },
+    //   ];
 
     dispatch(setBreadcrumbs(breadcrumbs));
-  }, [manifestData, dispatch, location.pathname]);
+  }, []);
+
+  // Загрузка сохраненных данных при монтировании
+  useEffect(() => {
+    if (manifestId) {
+      const savedItems = ManifestStorage.getScannedItems(manifestId);
+      setScannedItems(savedItems);
+    }
+  }, [manifestId]);
+
+  // Обновляем данные при изменении manifestData
+  useEffect(() => {
+    if (manifestData && manifestId) {
+      const savedItems = ManifestStorage.getScannedItems(manifestId);
+
+      const filteredItems = Object.keys(savedItems).reduce(
+        (acc, parcelNumber) => {
+          if (manifestData.parcels?.some((p) => p.number === parcelNumber)) {
+            acc[parcelNumber] = savedItems[parcelNumber];
+          }
+          return acc;
+        },
+        {} as ScannedParcels
+      );
+
+      setScannedItems(filteredItems);
+      ManifestStorage.saveScannedItems(manifestId, filteredItems);
+    }
+  }, [manifestData, manifestId]);
 
   const getShiftIdFromPath = (path: string) => {
     const parts = path.split("/");
@@ -138,16 +171,19 @@ export const ScanParcelItemsPage: React.FC = () => {
     );
 
     if (!alreadyScanned) {
-      setScannedItems((prev) => ({
-        ...prev,
+      const newItems = {
+        ...scannedItems,
         [parcelNumber]: [
-          ...(prev[parcelNumber] || []),
+          ...(scannedItems[parcelNumber] || []),
           {
             place,
             date: new Date().toISOString(),
           },
         ],
-      }));
+      };
+
+      setScannedItems(newItems);
+      ManifestStorage.saveScannedItems(manifestId!, newItems);
       soundUtilsRef.current.playBeepSound("success");
       api.success({
         message: `Место ${parcelNumber}%${place} отсканировано`,
@@ -162,7 +198,6 @@ export const ScanParcelItemsPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    console.log("!!!!!", scannedItems);
     if (!allItemsScanned) {
       setConfirmModalVisible(true);
     } else {
@@ -171,7 +206,6 @@ export const ScanParcelItemsPage: React.FC = () => {
   };
 
   const submitManifest = () => {
-    // Преобразуем объект scannedItems в массив для сервера
     const scannedItemsArray = Object.entries(scannedItems).flatMap(
       ([parcelNumber, items]) =>
         items.map((item) => ({
@@ -199,6 +233,7 @@ export const ScanParcelItemsPage: React.FC = () => {
 
   const clearResult = () => {
     setScannedItems({});
+    ManifestStorage.clearScannedItems(manifestId!);
   };
 
   if (!manifestId) {
