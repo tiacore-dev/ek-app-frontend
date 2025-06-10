@@ -23,7 +23,7 @@ export const fetchShiftById = async (
 ): Promise<IShiftResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(`${url}/shift/${shiftId}/get`, {
+  const response = await axiosInstance.get(`${url}shift/${shiftId}/get`, {
     headers: getAuthHeaders(),
   });
   console.log("[Server Response Data]", response.data);
@@ -35,12 +35,9 @@ export const fetchManifestById = async (
 ): Promise<IManifestResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(
-    `${url}/manifest/${manifestId}/get`,
-    {
-      headers: getAuthHeaders(),
-    }
-  );
+  const response = await axiosInstance.get(`${url}manifest/${manifestId}/get`, {
+    headers: getAuthHeaders(),
+  });
   console.log("[Server Response Data]", response.data);
   return response.data;
 };
@@ -53,7 +50,7 @@ export const fetchShifts = async (params: {
 }): Promise<IPaginateResponse<IListShiftResponse>> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(`${url}/shifts/get`, {
+  const response = await axiosInstance.get(`${url}shifts/get`, {
     headers: getAuthHeaders(),
     params,
   });
@@ -66,7 +63,7 @@ export const postManifestLoading = async (
 ): Promise<void> => {
   const url = process.env.REACT_APP_API_URL;
   const response = await axiosInstance.post(
-    `${url}/manifest-loading/${manifestId}/post`,
+    `${url}manifest-loading/${manifestId}/post`,
     data,
     {
       headers: getAuthHeaders(),
@@ -82,7 +79,7 @@ export const postManifestUploading = async (
 ): Promise<void> => {
   const url = process.env.REACT_APP_API_URL;
   const response = await axiosInstance.post(
-    `${url}/manifest-uploading/${manifestId}/post`,
+    `${url}manifest-uploading/${manifestId}/post`,
     data,
     {
       headers: getAuthHeaders(),
@@ -98,7 +95,7 @@ export const fetchAutoStatus = async (
 ): Promise<IGetAutoStatusResponse> => {
   const url = process.env.REACT_APP_API_URL;
 
-  const response = await axiosInstance.get(`${url}/auto-status/${autoId}/get`, {
+  const response = await axiosInstance.get(`${url}auto-status/${autoId}/get`, {
     headers: getAuthHeaders(),
   });
   console.log("[Server Response Data - Auto Status]", response.data);
@@ -108,7 +105,7 @@ export const fetchAutoStatus = async (
 export const postShiftEnd = async (shiftId: string): Promise<void> => {
   const url = process.env.REACT_APP_API_URL;
   const response = await axiosInstance.post(
-    `${url}/shift-end/${shiftId}/post`,
+    `${url}shift-end/${shiftId}/post`,
     {}, // Пустое тело запроса
     {
       headers: getAuthHeaders(),
@@ -120,7 +117,7 @@ export const postShiftEnd = async (shiftId: string): Promise<void> => {
 export const postShiftStart = async (shiftId: string): Promise<void> => {
   const url = process.env.REACT_APP_API_URL;
   const response = await axiosInstance.post(
-    `${url}/shift-start/${shiftId}/post`,
+    `${url}shift-start/${shiftId}/post`,
     {}, // Пустое тело запроса
     {
       headers: getAuthHeaders(),
