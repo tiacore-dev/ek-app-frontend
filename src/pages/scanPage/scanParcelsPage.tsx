@@ -26,6 +26,7 @@ import { CameraScanner } from "./cameraScanner";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
+import { formatMissingPlaces } from "./scanParcelsUtils";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
 
@@ -42,7 +43,7 @@ export const ScanParcelItemsPage: React.FC = () => {
   const dispatch = useDispatch();
   const [api, contextHolder] = notification.useNotification();
   const [scannedItems, setScannedItems] = useState<ScannedParcels>({});
-  const [scanMethod, setScanMethod] = useState<ScanMethod>("camera");
+  const [scanMethod, setScanMethod] = useState<ScanMethod>("barcode");
   const [isCameraModalVisible, setIsCameraModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -521,29 +522,72 @@ export const ScanParcelItemsPage: React.FC = () => {
       >
         {manifestData?.parcels && (
           <div style={{ marginTop: 16 }}>
-            <Typography.Text strong style={{ fontSize: 16 }}>
-              Неотсканированные накладные:
+            <Typography.Text
+              strong
+              style={{ fontSize: 15, marginBottom: 16, display: "block" }}
+            >
+              Не отсканировано ({allRequiredItemsCount - scannedItemsCount} из{" "}
+              {allRequiredItemsCount} мест):
             </Typography.Text>
             <List
-              size="small"
-              bordered
-              dataSource={manifestData.parcels.filter((parcel) => {
+              // size="small"
+              // bordered
+              style={{
+                backgroundColor: "#fad7bf38",
+                paddingLeft: 16,
+                paddingRight: 8,
+              }}
+              dataSource={manifestData.parcels
+                .filter((parcel) => {
+                  const scannedPlaces = scannedItems[parcel.number] || [];
+                  return scannedPlaces.length < parcel.count;
+                })
+                .sort((a, b) => a.number.localeCompare(b.number))} // Сортируем по номеру накладной
+              renderItem={(parcel) => {
                 const scannedPlaces = scannedItems[parcel.number] || [];
-                return scannedPlaces.length < parcel.count;
-              })}
-              renderItem={(parcel) => (
-                <List.Item>
-                  <Typography.Text style={{ fontSize: 16 }}>
-                    {parcel.number} -{" "}
-                    {parcel.count - (scannedItems[parcel.number]?.length || 0)}{" "}
-                    из {parcel.count} мест
-                  </Typography.Text>
-                </List.Item>
-              )}
+                const allPlaces = Array.from(
+                  { length: parcel.count },
+                  (_, i) => i + 1
+                );
+                const missingPlaces = allPlaces.filter(
+                  (place) => !scannedPlaces.some((item) => item.place === place)
+                );
+
+                return (
+                  <List.Item>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        flexWrap: "wrap",
+
+                        marginTop: -8,
+                      }}
+                    >
+                      <Typography.Text
+                        strong
+                        style={{ fontSize: 16, marginRight: 8 }}
+                      >
+                        Накладная: {parcel.number}
+                      </Typography.Text>
+                      <Typography.Text style={{ fontSize: 15 }}>
+                        {"Места: "}{" "}
+                        <span style={{ fontWeight: 600, fontSize: 16 }}>
+                          {formatMissingPlaces(missingPlaces, parcel.count)}
+                        </span>
+                        <span style={{ color: "#888", marginLeft: 8 }}>
+                          (всего мест {parcel.count} )
+                        </span>
+                      </Typography.Text>
+                    </div>
+                  </List.Item>
+                );
+              }}
             />
           </div>
         )}
       </Modal>
+
       <Modal
         open={errorModalVisible}
         onOk={() => setErrorModalVisible(false)}
