@@ -29,6 +29,7 @@ import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
 import { formatMissingPlaces } from "./scanParcelsUtils";
+import dayjs from "dayjs";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
 
@@ -208,7 +209,7 @@ export const ScanParcelItemsPage: React.FC = () => {
           ...(scannedItems[parcelNumber] || []),
           {
             place,
-            date: new Date().toISOString(),
+            date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // Изменено здесь
           },
         ],
       };
@@ -493,13 +494,19 @@ export const ScanParcelItemsPage: React.FC = () => {
                   style={{
                     backgroundColor:
                       scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
+                    padding: "12px 16px",
                   }}
                 >
-                  <Space direction="vertical" style={{ width: "100%" }}>
+                  <Space
+                    direction="vertical"
+                    style={{ width: "100%" }}
+                    size="small"
+                  >
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
                       <Typography.Text strong style={{ fontSize: 16 }}>
@@ -507,6 +514,33 @@ export const ScanParcelItemsPage: React.FC = () => {
                       </Typography.Text>
                       <Typography.Text strong style={{ fontSize: 16 }}>
                         {scannedCount} из {parcel.count} мест
+                      </Typography.Text>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px 16px",
+                      }}
+                    >
+                      <Typography.Text style={{ fontSize: 14 }}>
+                        <span style={{ color: "#666" }}>Заказчик:</span>{" "}
+                        <span style={{ fontWeight: 500 }}>
+                          {parcel.customer || "—"}
+                        </span>
+                      </Typography.Text>
+                      <Typography.Text style={{ fontSize: 14 }}>
+                        <span style={{ color: "#666" }}>Вес:</span>{" "}
+                        <span style={{ fontWeight: 500 }}>
+                          {parcel.weight || "—"} кг
+                        </span>
+                      </Typography.Text>
+                      <Typography.Text style={{ fontSize: 14 }}>
+                        <span style={{ color: "#666" }}>Объем:</span>{" "}
+                        <span style={{ fontWeight: 500 }}>
+                          {parcel.volume || "—"} м³
+                        </span>
                       </Typography.Text>
                     </div>
 
