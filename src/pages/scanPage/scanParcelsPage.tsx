@@ -319,6 +319,36 @@ export const ScanParcelItemsPage: React.FC = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   };
 
+  // Добавить после существующих useEffect
+  useEffect(() => {
+    // Восстанавливаем фокус после закрытия модального окна с ошибкой
+    if (!errorModalVisible && scanMethod === "barcode") {
+      setTimeout(() => {
+        const input = document.querySelector(
+          'input[type="text"]'
+        ) as HTMLInputElement;
+        if (input) {
+          input.focus();
+        }
+      }, 100);
+    }
+  }, [errorModalVisible, scanMethod]);
+
+  const handleErrorModalClose = () => {
+    setErrorModalVisible(false);
+    // Восстанавливаем фокус для продолжения сканирования
+    setTimeout(() => {
+      if (scanMethod === "barcode") {
+        const input = document.querySelector(
+          'input[type="text"]'
+        ) as HTMLInputElement;
+        if (input) {
+          input.focus();
+        }
+      }
+    }, 100);
+  };
+
   if (!manifestId) {
     return null;
   }
@@ -616,8 +646,8 @@ export const ScanParcelItemsPage: React.FC = () => {
 
       <Modal
         open={errorModalVisible}
-        onOk={() => setErrorModalVisible(false)}
-        onCancel={() => setErrorModalVisible(false)}
+        onOk={handleErrorModalClose}
+        onCancel={handleErrorModalClose}
         cancelButtonProps={{ style: { display: "none" } }}
         width={600}
       >
