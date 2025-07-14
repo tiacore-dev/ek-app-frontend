@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -65,6 +67,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     type: "sender",
     manifestId: manifestId || "",
   });
+  const [lastScannedItem, setLastScannedItem] = useState<string>("");
 
   // Загрузка сохраненных данных при монтировании
   useEffect(() => {
@@ -168,7 +171,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     const [parcelNumber, placeStr] = result.includes("%")
       ? result.split("%")
       : [result, "1"];
-    const place = parseInt(placeStr);
+    const place = Number.parseInt(placeStr);
 
     const isParcelInManifest = manifestData?.parcels?.some(
       (parcel) => parcel.number === parcelNumber
@@ -219,6 +222,18 @@ export const ScanParcelItemsPage: React.FC = () => {
           placement: "topRight",
           duration: 2,
         });
+        setLastScannedItem(`${parcelNumber}%${place}`);
+
+        // Прокрутка к накладной в списке
+        setTimeout(() => {
+          const element = document.getElementById(`parcel-${parcelNumber}`);
+          if (element) {
+            element.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }, 100);
       } catch (error) {
         console.error("Ошибка сохранения:", error);
         soundUtilsRef.current.playBeepSound("error");
@@ -423,6 +438,16 @@ export const ScanParcelItemsPage: React.FC = () => {
               showInfo={false}
             />
           </div>
+          {lastScannedItem && (
+            <div style={{ margin: 16, marginTop: 0 }}>
+              <Typography.Text
+                strong
+                style={{ fontSize: 16, color: "#52c41a" }}
+              >
+                Последнее отсканированное: {lastScannedItem}
+              </Typography.Text>
+            </div>
+          )}
           <List
             style={{ marginLeft: 4, marginRight: 4 }}
             bordered
@@ -434,6 +459,7 @@ export const ScanParcelItemsPage: React.FC = () => {
               return (
                 <List.Item
                   key={parcel.number}
+                  id={`parcel-${parcel.number}`}
                   style={{
                     backgroundColor:
                       scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
