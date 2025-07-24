@@ -533,13 +533,13 @@ export const ScanParcelItemsPage: React.FC = () => {
                       <Typography.Text style={{ fontSize: 14 }}>
                         <span style={{ color: "#666" }}>Вес:</span>{" "}
                         <span style={{ fontWeight: 500 }}>
-                          {parcel.weight || "—"} кг
+                          {parcel.volume || "—"} кг
                         </span>
                       </Typography.Text>
                       <Typography.Text style={{ fontSize: 14 }}>
                         <span style={{ color: "#666" }}>Объем:</span>{" "}
                         <span style={{ fontWeight: 500 }}>
-                          {parcel.volume || "—"} м³
+                          {parcel.weight || "—"} м³
                         </span>
                       </Typography.Text>
                     </div>
