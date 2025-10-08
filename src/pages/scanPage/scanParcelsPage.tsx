@@ -36,6 +36,7 @@ type ScanMethod = "zebra" | "barcode" | "camera";
 interface ScannedItem {
   place: number;
   date: string;
+  scannedParcelNumber?: string;
 }
 
 type ScannedParcels = Record<string, ScannedItem[]>;
@@ -169,47 +170,64 @@ export const ScanParcelItemsPage: React.FC = () => {
   const handleScanResult = (result: string) => {
     notification.destroy();
 
-    const [parcelNumber, placeStr] = result.includes("%")
-      ? result.split("%")
-      : [result, "1"];
-    const place = Number.parseInt(placeStr);
-
-    const isParcelInManifest = manifestData?.parcels?.some(
-      (parcel) => parcel.number === parcelNumber
-    );
-
-    if (!isParcelInManifest) {
-      setErrorMessage(`Накладная ${parcelNumber} не найдена в манифесте`);
-      setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error");
+    const trimmedResult = result.trim();
+    if (!trimmedResult) {
       return;
     }
 
+    const [rawParcelNumberPart, rawPlacePart = "1"] = trimmedResult.includes("%")
+      ? trimmedResult.split("%", 2)
+      : [trimmedResult, "1"];
+
+    const parcelNumberRaw = rawParcelNumberPart.trim();
+    const normalizedParcelNumber =
+      parcelNumberRaw.replace(/^0+(?=\d)/, "") || parcelNumberRaw;
+    const scannedParcelNumber =
+      parcelNumberRaw || normalizedParcelNumber || trimmedResult;
+
+    const placeCandidate = Number.parseInt(rawPlacePart.trim(), 10);
+    const place =
+      Number.isNaN(placeCandidate) || placeCandidate <= 0 ? 1 : placeCandidate;
+
     const targetParcel = manifestData?.parcels?.find(
-      (parcel) => parcel.number === parcelNumber
+      (parcel) =>
+        parcel.number === parcelNumberRaw ||
+        parcel.number === normalizedParcelNumber
     );
 
-    if (targetParcel && place > targetParcel.count) {
+    if (!targetParcel) {
       setErrorMessage(
-        `Ошибка: у накладной ${parcelNumber} только ${targetParcel.count} мест`
+        `Накладная ${scannedParcelNumber} не найдена в манифесте`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const alreadyScanned = scannedItems[parcelNumber]?.some(
+    const parcelKey = targetParcel.number;
+
+    if (targetParcel && place > targetParcel.count) {
+      setErrorMessage(
+        `Ошибка: у накладной ${scannedParcelNumber} только ${targetParcel.count} мест`
+      );
+      setErrorModalVisible(true);
+      soundUtilsRef.current.playBeepSound("error");
+      return;
+    }
+
+    const alreadyScanned = scannedItems[parcelKey]?.some(
       (item) => item.place === place
     );
 
     if (!alreadyScanned) {
       const newItems = {
         ...scannedItems,
-        [parcelNumber]: [
-          ...(scannedItems[parcelNumber] || []),
+        [parcelKey]: [
+          ...(scannedItems[parcelKey] || []),
           {
             place,
             date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // Изменено здесь
+            scannedParcelNumber,
           },
         ],
       };
@@ -219,15 +237,15 @@ export const ScanParcelItemsPage: React.FC = () => {
         ManifestStorage.saveScannedItems(manifestId!, newItems);
         soundUtilsRef.current.playBeepSound("success");
         api.success({
-          message: `Место ${parcelNumber}%${place} отсканировано`,
+          message: `Место ${scannedParcelNumber}%${place} отсканировано`,
           placement: "topRight",
           duration: 2,
         });
-        setLastScannedItem(`${parcelNumber}%${place}`);
+        setLastScannedItem(`${scannedParcelNumber}%${place}`);
 
         // Прокрутка к накладной в списке
         setTimeout(() => {
-          const element = document.getElementById(`parcel-${parcelNumber}`);
+          const element = document.getElementById(`parcel-${parcelKey}`);
           if (element) {
             element.scrollIntoView({
               behavior: "smooth",
@@ -242,7 +260,9 @@ export const ScanParcelItemsPage: React.FC = () => {
         setErrorModalVisible(true);
       }
     } else {
-      setErrorMessage(`Место ${parcelNumber}%${place} уже было отсканировано`);
+      setErrorMessage(
+        `Место ${scannedParcelNumber}%${place} уже было отсканировано`
+      );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
     }
@@ -260,7 +280,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     const scannedItemsArray = Object.entries(scannedItems).flatMap(
       ([parcelNumber, items]) =>
         items.map((item) => ({
-          parcelNumber,
+          parcelNumber: item.scannedParcelNumber || parcelNumber,
           place: item.place,
           scanTime: item.date,
         }))
