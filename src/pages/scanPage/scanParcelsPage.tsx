@@ -28,7 +28,7 @@ import { CameraScanner } from "./cameraScanner";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
-import { formatMissingPlaces } from "./scanParcelsUtils";
+import { formatMissingPlaces, normalizeParcelNumber } from "./scanParcelsUtils";
 import dayjs from "dayjs";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
@@ -36,7 +36,6 @@ type ScanMethod = "zebra" | "barcode" | "camera";
 interface ScannedItem {
   place: number;
   date: string;
-  scannedParcelNumber?: string;
 }
 
 type ScannedParcels = Record<string, ScannedItem[]>;
@@ -170,64 +169,53 @@ export const ScanParcelItemsPage: React.FC = () => {
   const handleScanResult = (result: string) => {
     notification.destroy();
 
-    const trimmedResult = result.trim();
-    if (!trimmedResult) {
-      return;
-    }
+    const [scannedParcelNumber, placeStr] = result.includes("%")
+      ? result.split("%")
+      : [result, "1"];
 
-    const [rawParcelNumberPart, rawPlacePart = "1"] = trimmedResult.includes("%")
-      ? trimmedResult.split("%", 2)
-      : [trimmedResult, "1"];
+    // Нормализуем номер накладной - удаляем ведущие нули
+    const normalizedParcelNumber = normalizeParcelNumber(scannedParcelNumber);
+    const place = Number.parseInt(placeStr);
 
-    const parcelNumberRaw = rawParcelNumberPart.trim();
-    const normalizedParcelNumber =
-      parcelNumberRaw.replace(/^0+(?=\d)/, "") || parcelNumberRaw;
-    const scannedParcelNumber =
-      parcelNumberRaw || normalizedParcelNumber || trimmedResult;
-
-    const placeCandidate = Number.parseInt(rawPlacePart.trim(), 10);
-    const place =
-      Number.isNaN(placeCandidate) || placeCandidate <= 0 ? 1 : placeCandidate;
-
-    const targetParcel = manifestData?.parcels?.find(
-      (parcel) =>
-        parcel.number === parcelNumberRaw ||
-        parcel.number === normalizedParcelNumber
+    // Ищем накладную в манифесте по нормализованному номеру
+    const isParcelInManifest = manifestData?.parcels?.some(
+      (parcel) => parcel.number === normalizedParcelNumber
     );
 
-    if (!targetParcel) {
+    if (!isParcelInManifest) {
       setErrorMessage(
-        `Накладная ${scannedParcelNumber} не найдена в манифесте`
+        `Накладная ${normalizedParcelNumber} (отсканировано: ${scannedParcelNumber}) не найдена в манифесте`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const parcelKey = targetParcel.number;
+    const targetParcel = manifestData?.parcels?.find(
+      (parcel) => parcel.number === normalizedParcelNumber
+    );
 
     if (targetParcel && place > targetParcel.count) {
       setErrorMessage(
-        `Ошибка: у накладной ${scannedParcelNumber} только ${targetParcel.count} мест`
+        `Ошибка: у накладной ${normalizedParcelNumber} только ${targetParcel.count} мест`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const alreadyScanned = scannedItems[parcelKey]?.some(
+    const alreadyScanned = scannedItems[normalizedParcelNumber]?.some(
       (item) => item.place === place
     );
 
     if (!alreadyScanned) {
       const newItems = {
         ...scannedItems,
-        [parcelKey]: [
-          ...(scannedItems[parcelKey] || []),
+        [normalizedParcelNumber]: [
+          ...(scannedItems[normalizedParcelNumber] || []),
           {
             place,
-            date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // Изменено здесь
-            scannedParcelNumber,
+            date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
           },
         ],
       };
@@ -237,15 +225,17 @@ export const ScanParcelItemsPage: React.FC = () => {
         ManifestStorage.saveScannedItems(manifestId!, newItems);
         soundUtilsRef.current.playBeepSound("success");
         api.success({
-          message: `Место ${scannedParcelNumber}%${place} отсканировано`,
+          message: `Место ${normalizedParcelNumber}%${place} отсканировано`,
           placement: "topRight",
           duration: 2,
         });
-        setLastScannedItem(`${scannedParcelNumber}%${place}`);
+        setLastScannedItem(`${normalizedParcelNumber}%${place}`);
 
         // Прокрутка к накладной в списке
         setTimeout(() => {
-          const element = document.getElementById(`parcel-${parcelKey}`);
+          const element = document.getElementById(
+            `parcel-${normalizedParcelNumber}`
+          );
           if (element) {
             element.scrollIntoView({
               behavior: "smooth",
@@ -261,7 +251,7 @@ export const ScanParcelItemsPage: React.FC = () => {
       }
     } else {
       setErrorMessage(
-        `Место ${scannedParcelNumber}%${place} уже было отсканировано`
+        `Место ${normalizedParcelNumber}%${place} уже было отсканировано`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
@@ -280,7 +270,7 @@ export const ScanParcelItemsPage: React.FC = () => {
     const scannedItemsArray = Object.entries(scannedItems).flatMap(
       ([parcelNumber, items]) =>
         items.map((item) => ({
-          parcelNumber: item.scannedParcelNumber || parcelNumber,
+          parcelNumber,
           place: item.place,
           scanTime: item.date,
         }))
@@ -640,8 +630,6 @@ export const ScanParcelItemsPage: React.FC = () => {
               {allRequiredItemsCount} мест):
             </Typography.Text>
             <List
-              // size="small"
-              // bordered
               style={{
                 backgroundColor: "#fad7bf38",
                 paddingLeft: 16,
@@ -652,7 +640,7 @@ export const ScanParcelItemsPage: React.FC = () => {
                   const scannedPlaces = scannedItems[parcel.number] || [];
                   return scannedPlaces.length < parcel.count;
                 })
-                .sort((a, b) => a.number.localeCompare(b.number))} // Сортируем по номеру накладной
+                .sort((a, b) => a.number.localeCompare(b.number))}
               renderItem={(parcel) => {
                 const scannedPlaces = scannedItems[parcel.number] || [];
                 const allPlaces = Array.from(
@@ -670,7 +658,6 @@ export const ScanParcelItemsPage: React.FC = () => {
                         display: "flex",
                         alignItems: "baseline",
                         flexWrap: "wrap",
-
                         marginTop: -8,
                       }}
                     >
