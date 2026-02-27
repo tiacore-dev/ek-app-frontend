@@ -17,12 +17,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Debug SSH agent
-        run: |
-          echo "User: ${{ secrets.SSH_USER }}"
-          echo "Host: ${{ secrets.SERVER_IP }}"
-          ssh-add -l || true
-
       - name: Deploy to Production
         if: github.ref_name == 'master'
         run: |
