@@ -580,14 +580,14 @@ export const ScanParcelItemsPage: React.FC = () => {
             Подтвердить загрузку манифеста
           </Button>
 
-          <Button
+          {/* <Button
             size="large"
             onClick={clearResult}
             block
             style={{ fontSize: 16 }}
           >
             Сбросить сканер
-          </Button>
+          </Button> */}
         </div>
       </Space>
 

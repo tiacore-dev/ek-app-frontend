@@ -141,9 +141,9 @@ export const TestPage: React.FC = () => {
             </span>
           )}
         </p>
-        <Button onClick={clearResult} size="large">
+        {/* <Button onClick={clearResult} size="large">
           Сбросить сканер
-        </Button>
+        </Button> */}
       </div>
 
       {/* Индикатор состояния для мобильных устройств */}
