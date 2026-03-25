@@ -13,7 +13,7 @@ export const WarehouseReceivePage: React.FC = () => {
   const [manualInput, setManualInput] = useState<string>("");
   const [scanResult, setScanResult] = useState<string>("");
   const [storageZone, setStorageZone] = useState<string>("");
-  const [isScanning, setIsScanning] = useState<boolean>(false);
+  // const [isScanning, setIsScanning] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const qrCodeRef = useRef<Html5Qrcode | null>(null);
   const qrContainerId = "qr-reader-container";
@@ -55,7 +55,7 @@ export const WarehouseReceivePage: React.FC = () => {
     try {
       if (qrCodeRef.current && qrCodeRef.current.isScanning) {
         await qrCodeRef.current.stop();
-        setIsScanning(false);
+        // setIsScanning(false);
       }
     } catch (err) {
       console.error("Ошибка остановки сканера:", err);
@@ -81,7 +81,7 @@ export const WarehouseReceivePage: React.FC = () => {
           handleScanResult,
           handleScanError
         );
-        setIsScanning(true);
+        // setIsScanning(true);
       }
     } catch (err) {
       console.error("Ошибка запуска сканера:", err);

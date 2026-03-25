@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { Button, notification } from "antd";
-import { NotificationInstance } from "antd/es/notification/interface";
+// import { NotificationInstance } from "antd/es/notification/interface";
 
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -82,18 +82,18 @@ export const TestPage: React.FC = () => {
     }, 300);
   };
 
-  const clearResult = () => {
-    setIsScanning(false);
-    accumulatedDataRef.current = "";
-    if (scanTimeoutRef.current) {
-      clearTimeout(scanTimeoutRef.current);
-      scanTimeoutRef.current = null;
-    }
-    if (inputRef.current) {
-      inputRef.current.value = "";
-      inputRef.current.focus();
-    }
-  };
+  // const clearResult = () => {
+  //   setIsScanning(false);
+  //   accumulatedDataRef.current = "";
+  //   if (scanTimeoutRef.current) {
+  //     clearTimeout(scanTimeoutRef.current);
+  //     scanTimeoutRef.current = null;
+  //   }
+  //   if (inputRef.current) {
+  //     inputRef.current.value = "";
+  //     inputRef.current.focus();
+  //   }
+  // };
 
   return (
     <div

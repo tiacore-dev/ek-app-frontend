@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { 
+  useParams, 
+  useNavigate, 
+  // useLocation 
+} from "react-router-dom";
 import {
   Button,
   notification,
@@ -57,10 +61,10 @@ export const ScanParcelItemsPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
+  // const location = useLocation();
   const {
     data: manifestData,
-    isLoading,
+    // isLoading,
     refetch: refetchManifest,
     isRefetching,
   } = useManifestQuery(manifestId || "");
@@ -141,11 +145,11 @@ export const ScanParcelItemsPage: React.FC = () => {
     }
   }, [manifestData, manifestId]);
 
-  const getShiftIdFromPath = (path: string) => {
-    const parts = path.split("/");
-    const shiftIndex = parts.indexOf("shifts") + 1;
-    return shiftIndex > 0 && shiftIndex < parts.length ? parts[shiftIndex] : "";
-  };
+  // const getShiftIdFromPath = (path: string) => {
+  //   const parts = path.split("/");
+  //   const shiftIndex = parts.indexOf("shifts") + 1;
+  //   return shiftIndex > 0 && shiftIndex < parts.length ? parts[shiftIndex] : "";
+  // };
 
   const allRequiredItemsCount =
     manifestData?.parcels?.reduce((sum, parcel) => sum + parcel.count, 0) || 0;
@@ -299,20 +303,20 @@ export const ScanParcelItemsPage: React.FC = () => {
     setConfirmModalVisible(false);
   };
 
-  const clearResult = () => {
-    setScannedItems({});
-    try {
-      ManifestStorage.clearScannedItems(manifestId!);
-      notification.success({
-        message: "Данные сканирования очищены",
-      });
-    } catch (error) {
-      console.error("Ошибка очистки данных:", error);
-      notification.error({
-        message: "Ошибка очистки данных",
-      });
-    }
-  };
+  // const clearResult = () => {
+  //   setScannedItems({});
+  //   try {
+  //     ManifestStorage.clearScannedItems(manifestId!);
+  //     notification.success({
+  //       message: "Данные сканирования очищены",
+  //     });
+  //   } catch (error) {
+  //     console.error("Ошибка очистки данных:", error);
+  //     notification.error({
+  //       message: "Ошибка очистки данных",
+  //     });
+  //   }
+  // };
 
   const handleRefresh = () => {
     refetchManifest();

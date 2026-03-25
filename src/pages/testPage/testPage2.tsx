@@ -85,17 +85,17 @@ export const TestPage2: React.FC = () => {
     }
   };
 
-  const clearResult = () => {
-    setIsScanning(false);
-    if (scanTimeoutRef.current) {
-      clearTimeout(scanTimeoutRef.current);
-      scanTimeoutRef.current = null;
-    }
-    if (inputRef.current) {
-      inputRef.current.value = "";
-      inputRef.current.focus();
-    }
-  };
+  // const clearResult = () => {
+  //   setIsScanning(false);
+  //   if (scanTimeoutRef.current) {
+  //     clearTimeout(scanTimeoutRef.current);
+  //     scanTimeoutRef.current = null;
+  //   }
+  //   if (inputRef.current) {
+  //     inputRef.current.value = "";
+  //     inputRef.current.focus();
+  //   }
+  // };
 
   return (
     <div
