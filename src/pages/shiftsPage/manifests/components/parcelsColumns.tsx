@@ -1,9 +1,5 @@
 import type { TableColumnsType } from "antd";
 import { IListParcels } from "../../../../types/shifts";
-import { Link } from "react-router-dom";
-import dayjs from "dayjs";
-import { Typography } from "antd";
-import { useMemo } from "react";
 
 export const useParcelsColumns = (
   manifest_id: string,

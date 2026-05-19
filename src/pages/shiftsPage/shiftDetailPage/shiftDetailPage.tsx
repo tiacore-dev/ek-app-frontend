@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Spin, Button, Card, Typography, Divider } from "antd";
+import { Spin, Button, Card, Typography } from "antd";
 import { useShiftQuery } from "../../../hooks/shifts/useShiftQuery";
 import { setBreadcrumbs } from "../../../redux/slices/breadcrumbsSlice";
 import { useDispatch } from "react-redux";

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from "react";
-import { Typography, Card, Spin, Row, Col } from "antd";
+import { Typography, Spin, Row, Col } from "antd";
 import dayjs from "dayjs";
 import { IShiftsQueryParams } from "../../types/shifts";
 import { useShiftsQuery } from "../../hooks/shifts/useShiftsQuery";

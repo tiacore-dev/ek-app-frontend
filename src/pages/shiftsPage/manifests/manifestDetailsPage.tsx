@@ -27,7 +27,7 @@ interface ManifestDetail {
 }
 
 export const ManifestDetailPage: React.FC = () => {
-  const { shift_id, manifest_id } = useParams<{
+  const { manifest_id } = useParams<{
     shift_id: string;
     manifest_id: string;
   }>();

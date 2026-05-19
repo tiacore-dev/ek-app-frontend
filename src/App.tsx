@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import "@ant-design/v5-patch-for-react-19";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -6,7 +6,6 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import { Provider } from "react-redux";
 import ProtectedRoute from "./protectedRoute";
@@ -25,10 +24,7 @@ import { ConfigProvider } from "antd";
 import ru_RU from "antd/locale/ru_RU";
 import { store } from "./redux/store";
 import theme from "./theme/themeConfig";
-import { TestPage } from "./pages/testPage/testPage";
 import "./App.css";
-import { TestPage2 } from "./pages/testPage/testPage2";
-import { TestPage3 } from "./pages/testPage/testPage3";
 import { ScanParcelItemsPage } from "./pages/scanPage/scanParcelsPage";
 
 dayjs.locale("ru");
@@ -46,9 +42,6 @@ const App: React.FC = () => {
               <Route element={<ProtectedRoute />}>
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/account" element={<AccountPage />} />
-                <Route path="/test" element={<TestPage />} />
-                <Route path="/test2" element={<TestPage2 />} />
-                <Route path="/test3" element={<TestPage3 />} />
                 <Route
                   path="/scan-parcels/:manifest_id"
                   element={<ScanParcelItemsPage />}

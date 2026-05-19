@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Modal, Button } from "antd";
 
@@ -18,7 +18,19 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
   const qrCodeRef = useRef<Html5Qrcode | null>(null);
   const qrContainerId = "qr-reader-container";
 
-  const startScanner = async () => {
+  const stopScanner =  useCallback(async () => {
+    try {
+      if (qrCodeRef.current?.isScanning) {
+        await qrCodeRef.current.stop();
+      }
+    } catch (err) {
+      console.error("Ошибка остановки сканера:", err);
+    } finally {
+      onClose();
+    }
+  },[onClose]);
+
+  const startScanner = useCallback( async () => {
     try {
       if (!qrCodeRef.current) {
         qrCodeRef.current = new Html5Qrcode(qrContainerId);
@@ -46,19 +58,9 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       console.error("Ошибка запуска сканера:", err);
       onClose();
     }
-  };
+  }, [onClose, onScan, onScanStatusChange, stopScanner]);
 
-  const stopScanner = async () => {
-    try {
-      if (qrCodeRef.current?.isScanning) {
-        await qrCodeRef.current.stop();
-      }
-    } catch (err) {
-      console.error("Ошибка остановки сканера:", err);
-    } finally {
-      onClose();
-    }
-  };
+ 
 
   useEffect(() => {
     if (isOpen) {
@@ -76,7 +78,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
         stopScanner();
       }
     };
-  }, [isOpen]);
+  }, [isOpen, stopScanner, startScanner]);
 
   return (
     <Modal

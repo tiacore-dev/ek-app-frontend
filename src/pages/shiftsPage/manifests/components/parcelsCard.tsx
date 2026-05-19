@@ -1,20 +1,12 @@
 import React, { useCallback } from "react";
 import { Card, Typography } from "antd";
-import { Link } from "react-router-dom";
 import { IListParcels } from "../../../../types/shifts";
-import dayjs from "dayjs";
 import "../../../../components/cards/card.css";
 
 interface ParcelCardProps {
   parcel: IListParcels;
   manifestId: string;
-  // type: "sender" | "recipient";
 }
-
-const formatDate = (timestamp?: number) => {
-  if (!timestamp) return "—";
-  return dayjs(timestamp).format("DD.MM.YYYY");
-};
 
 export const ParcelCard: React.FC<ParcelCardProps> = React.memo(
   ({ parcel, manifestId }) => {

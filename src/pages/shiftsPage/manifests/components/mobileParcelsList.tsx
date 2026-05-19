@@ -1,6 +1,5 @@
 import React from "react";
-import { List, Card } from "antd";
-import { CaretRightOutlined } from "@ant-design/icons";
+import { List } from "antd";
 import { ParcelCard } from "./parcelsCard";
 import { ParcelsComponentProps } from "../../../../types/shifts";
 

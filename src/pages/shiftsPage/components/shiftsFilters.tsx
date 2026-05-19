@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Space, DatePicker, Button, Typography, ConfigProvider } from "antd";
+import { Space, DatePicker, Button, Typography } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { DateRangeType } from "../../../types/shifts";
 import { useMobileDetection } from "../../../hooks/useMobileDetection";
@@ -28,18 +28,6 @@ export const ShiftsFilters: React.FC<ShiftsFiltersProps> = React.memo(
     const datePickerValue = useMemo((): [Dayjs, Dayjs] | null => {
       return dateFrom && dateTo ? [dayjs(dateFrom), dayjs(dateTo)] : null;
     }, [dateFrom, dateTo]);
-
-    const configProviderTheme = useMemo(
-      () => ({
-        components: {
-          DatePicker: {
-            cellHeight: isMobile ? 32 : 32,
-            cellWidth: isMobile ? 48 : 32,
-          },
-        },
-      }),
-      [isMobile]
-    );
 
     const totalShiftsComponent = useMemo(() => {
       if (totalShifts === undefined) return null;

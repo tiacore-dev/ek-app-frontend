@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Typography } from "antd";
+import { Table } from "antd";
 import { ParcelsComponentProps } from "../../../../types/shifts";
 import { useParcelsColumns } from "./parcelsColumns";
 

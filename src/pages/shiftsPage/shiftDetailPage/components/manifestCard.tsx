@@ -81,7 +81,7 @@ export const ManifestCard: React.FC<ManifestCardProps> = React.memo(
           </div>
         </>
       ),
-      [manifest.date, manifest.pieces_count, manifest.parcels_count, labelColor]
+      [manifest.date, manifest.parcels_count, labelColor]
     );
 
     return (
