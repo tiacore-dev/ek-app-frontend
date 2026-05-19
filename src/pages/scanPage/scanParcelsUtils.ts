@@ -3,9 +3,3 @@ export const formatMissingPlaces = (missingPlaces: number[], total: number) => {
 
   return `${missingPlaces.join(", ")}`;
 };
-
-// Функция для удаления ведущих нулей и нормализации номера
-export const normalizeParcelNumber = (scannedNumber: string): string => {
-  // Удаляем все ведущие нули
-  return scannedNumber.replace(/^0+/, "");
-};

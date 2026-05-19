@@ -32,7 +32,7 @@ import { CameraScanner } from "./cameraScanner";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
-import { formatMissingPlaces, normalizeParcelNumber } from "./scanParcelsUtils";
+import { formatMissingPlaces } from "./scanParcelsUtils";
 import dayjs from "dayjs";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
@@ -177,18 +177,16 @@ export const ScanParcelItemsPage: React.FC = () => {
       ? result.split("%")
       : [result, "1"];
 
-    // Нормализуем номер накладной - удаляем ведущие нули
-    const normalizedParcelNumber = normalizeParcelNumber(scannedParcelNumber);
     const place = Number.parseInt(placeStr);
 
     // Ищем накладную в манифесте по нормализованному номеру
     const isParcelInManifest = manifestData?.parcels?.some(
-      (parcel) => parcel.number === normalizedParcelNumber
+      (parcel) => parcel.number === scannedParcelNumber
     );
 
     if (!isParcelInManifest) {
       setErrorMessage(
-        `Накладная ${normalizedParcelNumber} (отсканировано: ${scannedParcelNumber}) не найдена в манифесте`
+        `Накладная ${scannedParcelNumber} не найдена в манифесте`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
@@ -196,27 +194,27 @@ export const ScanParcelItemsPage: React.FC = () => {
     }
 
     const targetParcel = manifestData?.parcels?.find(
-      (parcel) => parcel.number === normalizedParcelNumber
+      (parcel) => parcel.number === scannedParcelNumber
     );
 
     if (targetParcel && place > targetParcel.count) {
       setErrorMessage(
-        `Ошибка: у накладной ${normalizedParcelNumber} только ${targetParcel.count} мест`
+        `Ошибка: у накладной ${scannedParcelNumber} только ${targetParcel.count} мест`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const alreadyScanned = scannedItems[normalizedParcelNumber]?.some(
+    const alreadyScanned = scannedItems[scannedParcelNumber]?.some(
       (item) => item.place === place
     );
 
     if (!alreadyScanned) {
       const newItems = {
         ...scannedItems,
-        [normalizedParcelNumber]: [
-          ...(scannedItems[normalizedParcelNumber] || []),
+        [scannedParcelNumber]: [
+          ...(scannedItems[scannedParcelNumber] || []),
           {
             place,
             date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
@@ -229,16 +227,16 @@ export const ScanParcelItemsPage: React.FC = () => {
         ManifestStorage.saveScannedItems(manifestId!, newItems);
         soundUtilsRef.current.playBeepSound("success");
         api.success({
-          message: `Место ${normalizedParcelNumber}%${place} отсканировано`,
+          message: `Место ${scannedParcelNumber}%${place} отсканировано`,
           placement: "topRight",
           duration: 2,
         });
-        setLastScannedItem(`${normalizedParcelNumber}%${place}`);
+        setLastScannedItem(`${scannedParcelNumber}%${place}`);
 
         // Прокрутка к накладной в списке
         setTimeout(() => {
           const element = document.getElementById(
-            `parcel-${normalizedParcelNumber}`
+            `parcel-${scannedParcelNumber}`
           );
           if (element) {
             element.scrollIntoView({
@@ -255,7 +253,7 @@ export const ScanParcelItemsPage: React.FC = () => {
       }
     } else {
       setErrorMessage(
-        `Место ${normalizedParcelNumber}%${place} уже было отсканировано`
+        `Место ${scannedParcelNumber}%${place} уже было отсканировано`
       );
       setErrorModalVisible(true);
       soundUtilsRef.current.playBeepSound("error");
