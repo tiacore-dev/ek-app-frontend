@@ -1,9 +1,11 @@
 interface ScannedItem {
   place: number;
   date: string;
+  parcelId?: string;
+  barcode?: string;
 }
 
-type ScannedParcels = Record<string, ScannedItem[]>;
+export type ScannedParcels = Record<string, ScannedItem[]>;
 type ManifestStorageData = Record<string, ScannedParcels>;
 
 class ManifestStorage {

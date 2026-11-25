@@ -26,6 +26,7 @@ export interface IListParcels {
   weight: number;
   volume: number;
   number: string;
+  barcodes?: string[];
 }
 
 export interface IManifestLoadingResponse {
@@ -95,9 +96,11 @@ export interface IExtraPayment {
 export interface IManifestLoadingRequest {
   comment?: string;
   scannedItems?: Array<{
+    parcelId?: string;
     parcelNumber: string;
     place: number;
     scanTime: string;
+    barcode?: string;
   }>;
 }
 

@@ -4,6 +4,7 @@ import {
   postManifestLoading,
   postManifestUploading,
 } from "../../api/shiftsApi";
+import type { IManifestLoadingRequest } from "../../types/shifts";
 import { message } from "antd";
 
 export const useManifestMutation = ({
@@ -16,14 +17,7 @@ export const useManifestMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: {
-      comment?: string;
-      scannedItems?: Array<{
-        parcelNumber: string;
-        place: number;
-        scanTime: string;
-      }>;
-    }) =>
+    mutationFn: (data: IManifestLoadingRequest) =>
       type === "sender"
         ? postManifestLoading(manifestId, data)
         : postManifestUploading(manifestId, data),

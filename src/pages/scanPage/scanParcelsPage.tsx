@@ -31,18 +31,17 @@ import { BarcodeScanner } from "./barcodeScanner";
 import { CameraScanner } from "./cameraScanner";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import ManifestStorage from "../shiftsPage/manifests/manifestStorage";
-import { formatMissingPlaces } from "./scanParcelsUtils";
+import ManifestStorage, {
+  type ScannedParcels,
+} from "../shiftsPage/manifests/manifestStorage";
+import {
+  formatMissingPlaces,
+  resolveManifestScan,
+  restoreManifestScans,
+} from "./scanParcelsUtils";
 import dayjs from "dayjs";
 
 type ScanMethod = "zebra" | "barcode" | "camera";
-
-interface ScannedItem {
-  place: number;
-  date: string;
-}
-
-type ScannedParcels = Record<string, ScannedItem[]>;
 
 export const ScanParcelItemsPage: React.FC = () => {
   const { manifest_id: manifestId } = useParams<{ manifest_id: string }>();
@@ -50,6 +49,7 @@ export const ScanParcelItemsPage: React.FC = () => {
   const dispatch = useDispatch();
   const [api, contextHolder] = notification.useNotification();
   const [scannedItems, setScannedItems] = useState<ScannedParcels>({});
+  const scannedItemsRef = useRef<ScannedParcels>({});
   const [scanMethod, setScanMethod] = useState<ScanMethod>("barcode");
   const [isCameraModalVisible, setIsCameraModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
@@ -68,29 +68,12 @@ export const ScanParcelItemsPage: React.FC = () => {
     refetch: refetchManifest,
     isRefetching,
   } = useManifestQuery(manifestId || "");
+  const parcels = manifestData?.parcels;
   const mutation = useManifestMutation({
     type: "sender",
     manifestId: manifestId || "",
   });
   const [lastScannedItem, setLastScannedItem] = useState<string>("");
-
-  // Загрузка сохраненных данных при монтировании
-  useEffect(() => {
-    if (manifestId) {
-      try {
-        const savedItems = ManifestStorage.getScannedItems(manifestId);
-        if (Object.keys(savedItems).length > 0) {
-          setScannedItems(savedItems);
-        }
-      } catch (error) {
-        console.error("Ошибка загрузки данных:", error);
-        notification.error({
-          message: "Ошибка загрузки сохраненных данных",
-          description: "Попробуйте обновить страницу",
-        });
-      }
-    }
-  }, [manifestId]);
 
   useEffect(() => {
     dispatch(setBreadcrumbs([{ label: "", to: "/home" }]));
@@ -121,29 +104,27 @@ export const ScanParcelItemsPage: React.FC = () => {
     };
   }, []);
 
-  // Обновляем данные при изменении manifestData
+  // Сверяем черновик с составом манифеста при открытии и обновлении.
   useEffect(() => {
-    if (manifestData && manifestId) {
+    if (!manifestId || !parcels) {
+      scannedItemsRef.current = {};
+      setScannedItems(scannedItemsRef.current);
+      return;
+    }
+
+    const savedItems = ManifestStorage.getScannedItems(manifestId);
+    const restoredItems = restoreManifestScans(savedItems, parcels);
+    scannedItemsRef.current = restoredItems;
+    setScannedItems(restoredItems);
+
+    if (Object.keys(savedItems).length > 0) {
       try {
-        const savedItems = ManifestStorage.getScannedItems(manifestId);
-
-        const filteredItems = Object.keys(savedItems).reduce(
-          (acc, parcelNumber) => {
-            if (manifestData.parcels?.some((p) => p.number === parcelNumber)) {
-              acc[parcelNumber] = savedItems[parcelNumber];
-            }
-            return acc;
-          },
-          {} as ScannedParcels
-        );
-
-        setScannedItems(filteredItems);
-        ManifestStorage.saveScannedItems(manifestId, filteredItems);
+        ManifestStorage.saveScannedItems(manifestId, restoredItems);
       } catch (error) {
         console.error("Ошибка обновления данных:", error);
       }
     }
-  }, [manifestData, manifestId]);
+  }, [manifestId, parcels]);
 
   // const getShiftIdFromPath = (path: string) => {
   //   const parts = path.split("/");
@@ -152,7 +133,7 @@ export const ScanParcelItemsPage: React.FC = () => {
   // };
 
   const allRequiredItemsCount =
-    manifestData?.parcels?.reduce((sum, parcel) => sum + parcel.count, 0) || 0;
+    parcels?.reduce((sum, parcel) => sum + parcel.count, 0) || 0;
 
   const scannedItemsCount = Object.values(scannedItems).reduce(
     (sum, items) => sum + items.length,
@@ -160,8 +141,8 @@ export const ScanParcelItemsPage: React.FC = () => {
   );
 
   const allItemsScanned =
-    manifestData?.parcels?.every((parcel) => {
-      const scannedPlaces = scannedItems[parcel.number] || [];
+    parcels?.every((parcel) => {
+      const scannedPlaces = scannedItems[parcel.id] ?? [];
       return scannedPlaces.length === parcel.count;
     }) || false;
 
@@ -170,94 +151,72 @@ export const ScanParcelItemsPage: React.FC = () => {
       ? Math.round((scannedItemsCount / allRequiredItemsCount) * 100)
       : 0;
 
+  const showScanError = (message: string) => {
+    setErrorMessage(message);
+    setErrorModalVisible(true);
+    soundUtilsRef.current.playBeepSound("error");
+  };
+
   const handleScanResult = (result: string) => {
+    if (!manifestId || !parcels || mutation.isPending) return;
     notification.destroy();
 
-    const [scannedParcelNumber, placeStr] = result.includes("%")
-      ? result.split("%")
-      : [result, "1"];
-
-    const place = Number.parseInt(placeStr);
-
-    // Ищем накладную в манифесте по нормализованному номеру
-    const isParcelInManifest = manifestData?.parcels?.some(
-      (parcel) => parcel.number === scannedParcelNumber
-    );
-
-    if (!isParcelInManifest) {
-      setErrorMessage(
-        `Накладная ${scannedParcelNumber} не найдена в манифесте`
+    let scan: ReturnType<typeof resolveManifestScan>;
+    try {
+      scan = resolveManifestScan(result, parcels);
+    } catch (error) {
+      showScanError(
+        error instanceof Error ? error.message : "Не удалось распознать код."
       );
-      setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error");
       return;
     }
 
-    const targetParcel = manifestData?.parcels?.find(
-      (parcel) => parcel.number === scannedParcelNumber
-    );
-
-    if (targetParcel && place > targetParcel.count) {
-      setErrorMessage(
-        `Ошибка: у накладной ${scannedParcelNumber} только ${targetParcel.count} мест`
-      );
-      setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error");
+    const { parcel, place, barcode } = scan;
+    const currentItems = scannedItemsRef.current;
+    const parcelItems = currentItems[parcel.id] ?? [];
+    const placeLabel = `${parcel.number}%${place}`;
+    if (parcelItems.some((item) => item.place === place)) {
+      showScanError(`Место ${placeLabel} уже было отсканировано`);
       return;
     }
 
-    const alreadyScanned = scannedItems[scannedParcelNumber]?.some(
-      (item) => item.place === place
-    );
+    const newItems = {
+      ...currentItems,
+      [parcel.id]: [
+        ...parcelItems,
+        {
+          parcelId: parcel.id,
+          place,
+          barcode,
+          date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+        },
+      ],
+    };
 
-    if (!alreadyScanned) {
-      const newItems = {
-        ...scannedItems,
-        [scannedParcelNumber]: [
-          ...(scannedItems[scannedParcelNumber] || []),
-          {
-            place,
-            date: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
-          },
-        ],
-      };
-
-      setScannedItems(newItems);
-      try {
-        ManifestStorage.saveScannedItems(manifestId!, newItems);
-        soundUtilsRef.current.playBeepSound("success");
-        api.success({
-          message: `Место ${scannedParcelNumber}%${place} отсканировано`,
-          placement: "topRight",
-          duration: 2,
-        });
-        setLastScannedItem(`${scannedParcelNumber}%${place}`);
-
-        // Прокрутка к накладной в списке
-        setTimeout(() => {
-          const element = document.getElementById(
-            `parcel-${scannedParcelNumber}`
-          );
-          if (element) {
-            element.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }
-        }, 100);
-      } catch (error) {
-        console.error("Ошибка сохранения:", error);
-        soundUtilsRef.current.playBeepSound("error");
-        setErrorMessage("Ошибка сохранения данных. Попробуйте еще раз.");
-        setErrorModalVisible(true);
-      }
-    } else {
-      setErrorMessage(
-        `Место ${scannedParcelNumber}%${place} уже было отсканировано`
-      );
-      setErrorModalVisible(true);
-      soundUtilsRef.current.playBeepSound("error");
+    try {
+      ManifestStorage.saveScannedItems(manifestId, newItems);
+    } catch (error) {
+      console.error("Ошибка сохранения:", error);
+      showScanError("Ошибка сохранения данных. Попробуйте еще раз.");
+      return;
     }
+
+    scannedItemsRef.current = newItems;
+    setScannedItems(newItems);
+    setLastScannedItem(placeLabel);
+    soundUtilsRef.current.playBeepSound("success");
+    api.success({
+      message: `Место ${placeLabel} отсканировано`,
+      placement: "topRight",
+      duration: 2,
+    });
+
+    setTimeout(() => {
+      document.getElementById(`parcel-${parcel.id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
   };
 
   const handleSubmit = () => {
@@ -269,13 +228,16 @@ export const ScanParcelItemsPage: React.FC = () => {
   };
 
   const submitManifest = () => {
-    const scannedItemsArray = Object.entries(scannedItems).flatMap(
-      ([parcelNumber, items]) =>
-        items.map((item) => ({
-          parcelNumber,
-          place: item.place,
-          scanTime: item.date,
-        }))
+    if (!parcels || mutation.isPending) return;
+
+    const scannedItemsArray = parcels.flatMap((parcel) =>
+      (scannedItems[parcel.id] ?? []).map((item) => ({
+        parcelId: parcel.id,
+        parcelNumber: parcel.number,
+        place: item.place,
+        scanTime: item.date,
+        barcode: item.barcode,
+      }))
     );
 
     mutation.mutate(
@@ -332,34 +294,14 @@ export const ScanParcelItemsPage: React.FC = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   };
 
-  // Добавить после существующих useEffect
-  useEffect(() => {
-    // Восстанавливаем фокус после закрытия модального окна с ошибкой
-    if (!errorModalVisible && scanMethod === "barcode") {
-      setTimeout(() => {
-        const input = document.querySelector(
-          'input[type="text"]'
-        ) as HTMLInputElement;
-        if (input) {
-          input.focus();
-        }
-      }, 100);
-    }
-  }, [errorModalVisible, scanMethod]);
-
   const handleErrorModalClose = () => {
     setErrorModalVisible(false);
-    // Восстанавливаем фокус для продолжения сканирования
-    setTimeout(() => {
-      if (scanMethod === "barcode") {
-        const input = document.querySelector(
-          'input[type="text"]'
-        ) as HTMLInputElement;
-        if (input) {
-          input.focus();
-        }
-      }
-    }, 100);
+  };
+
+  const restoreScannerFocus = () => {
+    containerRef.current
+      ?.querySelector<HTMLInputElement>('input[type="text"]')
+      ?.focus();
   };
 
   if (!manifestId) {
@@ -456,8 +398,8 @@ export const ScanParcelItemsPage: React.FC = () => {
 
         <Typography.Text style={{ fontSize: 16 }}>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            {scanMethod === "zebra" && "Наведите сканер на QR-код"}
-            {scanMethod === "barcode" && "Наведите сканер на штрих-код"}
+            {scanMethod === "zebra" && "Наведите ТСД на код места"}
+            {scanMethod === "barcode" && "Наведите сканер на код места"}
             {scanMethod === "camera" && (
               <Button
                 onClick={() => setIsCameraModalVisible(true)}
@@ -494,15 +436,15 @@ export const ScanParcelItemsPage: React.FC = () => {
           <List
             style={{ marginLeft: 4, marginRight: 4 }}
             bordered
-            dataSource={manifestData?.parcels || []}
+            dataSource={parcels ?? []}
             renderItem={(parcel) => {
-              const scannedPlaces = scannedItems[parcel.number] || [];
+              const scannedPlaces = scannedItems[parcel.id] ?? [];
               const scannedCount = scannedPlaces.length;
 
               return (
                 <List.Item
-                  key={parcel.number}
-                  id={`parcel-${parcel.number}`}
+                  key={parcel.id}
+                  id={`parcel-${parcel.id}`}
                   style={{
                     backgroundColor:
                       scannedCount === parcel.count ? "#f6ffed" : "#fff2f0",
@@ -576,6 +518,7 @@ export const ScanParcelItemsPage: React.FC = () => {
             type="primary"
             onClick={handleSubmit}
             loading={mutation.isPending}
+            disabled={!parcels}
             block
             style={{ marginBottom: 8, fontSize: 16 }}
           >
@@ -622,7 +565,7 @@ export const ScanParcelItemsPage: React.FC = () => {
         cancelText="Отмена"
         width={600}
       >
-        {manifestData?.parcels && (
+        {parcels && (
           <div style={{ marginTop: 16 }}>
             <Typography.Text
               strong
@@ -637,14 +580,14 @@ export const ScanParcelItemsPage: React.FC = () => {
                 paddingLeft: 16,
                 paddingRight: 8,
               }}
-              dataSource={manifestData.parcels
+              dataSource={parcels
                 .filter((parcel) => {
-                  const scannedPlaces = scannedItems[parcel.number] || [];
+                  const scannedPlaces = scannedItems[parcel.id] ?? [];
                   return scannedPlaces.length < parcel.count;
                 })
                 .sort((a, b) => a.number.localeCompare(b.number))}
               renderItem={(parcel) => {
-                const scannedPlaces = scannedItems[parcel.number] || [];
+                const scannedPlaces = scannedItems[parcel.id] ?? [];
                 const allPlaces = Array.from(
                   { length: parcel.count },
                   (_, i) => i + 1
@@ -691,6 +634,7 @@ export const ScanParcelItemsPage: React.FC = () => {
         open={errorModalVisible}
         onOk={handleErrorModalClose}
         onCancel={handleErrorModalClose}
+        afterClose={restoreScannerFocus}
         cancelButtonProps={{ style: { display: "none" } }}
         width={600}
       >
